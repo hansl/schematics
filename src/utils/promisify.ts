@@ -6,8 +6,8 @@ export function promisify(fn: (...args: any[]) => any): (...args: any[]) => Prom
       args[i] = arguments[i];
     }
 
-    return new Promise(function(reject, resolve) {
-      fn.apply(null, args.concat(function(err: any, result?: any) {
+    return new Promise((resolve, reject) => {
+      fn.apply(this, args.concat(function(err: any, result?: any) {
         if (err) {
           reject(err);
         } else {

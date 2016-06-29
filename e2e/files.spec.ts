@@ -1,23 +1,31 @@
 import * as path from 'path';
 
-import {FileSource} from '../src';
+import {Context, Compiler, FileSource} from '../src';
+
+import 'rxjs/add/operator/count';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/toPromise';
 
 
 describe('FileSource', () => {
   it('can load files', (done: any) => {
-    FileSource.loadFrom(path.join(__dirname, 'template1'))
-      .forEach(entry => Promise.resolve()
-        .then(() => entry.scaffold({
-          'user': 'hans',
-          'blah': 'testing',
-          'functions': [
-            {'name': 'test', 'log': 'rocknroll'},
-            {'name': 'test2', 'log': 'another roll'}
-          ]
-        }))
-        .then(content => {
-          console.log(entry.path, entry.name, content);
-        }))
+    let nbCompiled = 0;
+    const compiler: Compiler = {
+      compile: (content: string) => {
+        nbCompiled++;
+        return (context: Context) => {
+          return '';
+        };
+      }
+    };
+
+    FileSource.loadFrom(path.join(__dirname, 'template1'), compiler)
+      .count()
+      .toPromise()
+      .then(nb => {
+        expect(nb).toBe(2);
+        expect(nbCompiled).toBe(nb);
+      })
       .then(done, done.fail);
   });
 });

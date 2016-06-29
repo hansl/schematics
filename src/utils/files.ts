@@ -15,6 +15,8 @@ import 'rxjs/add/observable/from';
 import 'rxjs/add/observable/fromPromise';
 
 
+const readDir = promisify(fs.readdir);
+const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 
 
@@ -30,23 +32,21 @@ class FileSourceEntry implements Entry {
   get path(): string { return this._path; }
 
   get template(): string {
-    if (this._template === null) {
-      this._template = fs.readFileSync(this.path, 'utf-8');
-      this._compiled = this._compiler.compile(this._template);
-    }
     return this._template;
   }
   set template(v: string) {
     this._template = v;
     if (v !== null) {
       this._compiled = this._compiler.compile(this._template);
+    } else {
+      this._compiled = null;
     }
   }
 
   scaffold(context?: Context): Promise<string> {
     return Promise.resolve()
       .then(() => this._compiled)
-      .then(compiler => compiler(context || {}));
+      .then(compiler => compiler ? compiler(context || {}) : null);
   }
 
   /**
@@ -88,10 +88,7 @@ export class FileSource implements Source {
     }
 
     const s = new Subject<Entry>();
-    fs.readdir(fullPath, (err: any, files: string[]) => {
-      if (err) {
-        return s.error(err);
-      }
+    readDir(fullPath).then((files: string[]) => {
       const children: Promise<void>[] = [];
       files.forEach((name: string) => {
         const p2 = path.join(p, name);
@@ -99,7 +96,12 @@ export class FileSource implements Source {
       });
 
       // Complete the current subject once every children is done.
-      Promise.all(children).then(() => s.complete()).catch((err) => s.error(err));
+      Promise.all(children).then(() => s.complete()).catch((err) => {
+        debugger;
+        s.error(err)
+      });
+    }, (err: Error) => {
+      s.error(err);
     });
     return s.asObservable();
   }
