@@ -4,7 +4,6 @@
     "declaration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "mapRoot": "",
     "module": "commonjs",
     "moduleResolution": "node",
     "noEmitOnError": true,
@@ -25,5 +24,9 @@
         "../node_modules/*"
       ]
     }
-  }
+  },
+  "files": [
+    "types.d.ts",
+    "index.ts"
+  ]
 }

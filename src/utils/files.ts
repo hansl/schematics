@@ -17,6 +17,7 @@ import 'rxjs/add/observable/fromPromise';
 
 const readDir = promisify(fs.readdir);
 const readFile = promisify(fs.readFile);
+const stat = promisify(fs.stat);
 const writeFile = promisify(fs.writeFile);
 
 
@@ -53,22 +54,18 @@ class FileSourceEntry implements Entry {
    * Asynchronously create a file and return its entry.
    * @param p The full path of the file to create.
    * @param entryPath The path of the entry.
+   * @param compiler The Compiler to use for the entry.
    * @returns A promise of the entry.
    */
   static create(p: string, entryPath: string = p, compiler: Compiler): Promise<Entry> {
-    return new Promise((resolve, reject) => {
-      const entry = new FileSourceEntry(path.basename(entryPath),
-                                        path.dirname(entryPath),
-                                        compiler);
-      fs.readFile(p, 'utf-8', (err, content) => {
-        if (err) {
-          reject(err);
-        } else {
-          entry.template = content;
-          resolve(entry);
-        }
+    return readFile(p, 'utf-8')
+      .then(content => {
+        const entry = new FileSourceEntry(path.basename(entryPath),
+                                          path.dirname(entryPath),
+                                          compiler);
+        entry.template = content;
+        return entry;
       });
-    });
   }
 }
 
@@ -78,11 +75,18 @@ export class FileSource implements Source {
 
   private _loadFrom(root: string, p: string): Observable<Entry> {
     const fullPath = path.join(root, p);
+    let stat: fs.Stats = null;
 
-    var stat = fs.statSync(fullPath);
-    if (!stat) {
-      return Observable.empty();
+    try {
+      stat = fs.statSync(fullPath);
+    } catch (e) {
+      if (e.code !== 'ENOENT') {
+        return Observable.throw(e);
+      } else {
+        return Observable.empty();
+      }
     }
+
     if (!stat.isDirectory()) {
       return Observable.fromPromise(FileSourceEntry.create(fullPath, p, this._compiler));
     }
@@ -97,7 +101,6 @@ export class FileSource implements Source {
 
       // Complete the current subject once every children is done.
       Promise.all(children).then(() => s.complete()).catch((err) => {
-        debugger;
         s.error(err)
       });
     }, (err: Error) => {
@@ -127,7 +130,34 @@ export class FileSource implements Source {
 
 
 export class FileSink extends SimpleSink {
-  write(fileName: string, content: string): Promise<void> {
-    return writeFile(fileName, content, 'utf-8');
+  constructor(private _root: string = process.cwd()) {
+    super();
+  }
+
+  write(entry: Entry, content: string): Promise<void> {
+    const dir = path.join(this._root, entry.path);
+
+    return stat(dir)
+      .catch(e => {
+        if (e.code !== 'ENOENT') {
+          throw e;
+        }
+
+        let p = '';
+        const dirFragment = dir.split(path.sep);
+        for (const current of dirFragment) {
+          const currentPath = path.join(p, current);
+          try {
+            fs.mkdirSync(currentPath);
+          } catch (e) {
+            if (e.code !== 'EEXIST') {
+              throw e;
+            }
+          }
+          p = currentPath;
+        }
+      })
+      // This will error with the appropriate error if there's a permission problem.
+      .then(() => writeFile(path.join(dir, entry.name), content, 'utf-8'));
   }
 }

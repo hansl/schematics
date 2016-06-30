@@ -4,7 +4,8 @@
   "description": "Blueprint library for TypeScript.",
   "main": "index.js",
   "scripts": {
-    "test": "scripts/run-e2e.js"
+    "test": "scripts/run-spec.js",
+    "e2e": "scripts/run-e2e.js"
   },
   "author": "",
   "license": "ISC",
@@ -18,9 +19,14 @@
     "typescript": "next"
   },
   "devDependencies": {
+    "@types/glob": "^5.0.22-alpha",
     "@types/jasmine": "^2.2.22-alpha",
+    "@types/mock-fs": "^3.6.22-alpha",
+    "glob": "^7.0.5",
     "jasmine": "^2.4.1",
+    "jasmine-spec-reporter": "^2.5.0",
     "jasmine-ts": "0.0.2",
+    "mock-fs": "^3.9.0",
     "ts-node": "^0.9.1"
   }
 }
