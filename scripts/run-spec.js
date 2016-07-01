@@ -14,7 +14,8 @@ require("ts-node").register({
 });
 
 // Load the definitions for specs.
-require(path.join(projectBaseDir, 'specs.d.ts'));
+// Something needs to happen here to add the jasmine d.ts.
+// require(path.join(projectBaseDir, 'specs.d.ts'));
 
 
 // Create a Jasmine runner and configure it.
@@ -25,3 +26,4 @@ jasmine.loadConfigFile(path.join(projectBaseDir, 'jasmine.json'));
 
 // Run the tests.
 jasmine.execute([ path.normalize('**/*.spec.ts') ]);
+
