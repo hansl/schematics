@@ -1,3 +1,4 @@
+/// <reference path="../../node_modules/@types/jasmine/index.d.ts" />
 import * as mockFs from 'mock-fs';
 
 import * as glob from 'glob';
