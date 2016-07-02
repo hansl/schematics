@@ -9,7 +9,7 @@ import {
     Compiler,
     FileSink,
     FileSource
-} from '..';
+} from '../index';
 
 import 'rxjs/add/operator/count';
 import 'rxjs/add/operator/map';

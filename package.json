@@ -4,8 +4,12 @@
   "description": "Blueprint library for TypeScript.",
   "main": "index.js",
   "scripts": {
-    "test": "scripts/run-spec.js",
-    "e2e": "scripts/run-e2e.js"
+    "build": "tsc -p src",
+    "test": "npm run build && npm run test:coverage",
+    "test:coverage": "npm run coverage:test && npm run coverage:remap && npm run coverage:report",
+    "coverage:test": "rm -rf coverage; istanbul cover -x '**/*.spec.js' -i '**/*.js'  --report lcovonly --root dist ./scripts/run-spec.js",
+    "coverage:remap": "remap-istanbul --input coverage/coverage.json --output coverage/coverage.json",
+    "coverage:report": "istanbul report html"
   },
   "author": "",
   "license": "ISC",
@@ -21,12 +25,14 @@
   "devDependencies": {
     "@types/glob": "^5.0.22-alpha",
     "@types/jasmine": "^2.2.22-alpha",
+    "@types/minimatch": "^2.0.25-alpha",
     "@types/mock-fs": "^3.6.22-alpha",
     "glob": "^7.0.5",
+    "istanbul": "^0.4.4",
     "jasmine": "^2.4.1",
     "jasmine-spec-reporter": "^2.5.0",
-    "jasmine-ts": "0.0.2",
     "mock-fs": "^3.9.0",
+    "remap-istanbul": "^0.6.4",
     "ts-node": "^0.9.1"
   }
 }

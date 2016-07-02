@@ -1,29 +1,17 @@
 #!/usr/bin/env node
 const path = require("path");
-const fs = require("fs");
-
 const Jasmine = require("jasmine");
 const JasmineSpecReporter = require('jasmine-spec-reporter');
 
-const projectBaseDir = path.resolve(__dirname, '../src');
 
-
-// TypeScript loader.
-require("ts-node").register({
-  project: path.join(projectBaseDir, 'tsconfig.json')
-});
-
-// Load the definitions for specs.
-// Something needs to happen here to add the jasmine d.ts.
-// require(path.join(projectBaseDir, 'specs.d.ts'));
+const projectBaseDir = '../dist';
 
 
 // Create a Jasmine runner and configure it.
-const jasmine = new Jasmine({ projectBaseDir });
-
+const jasmine = new Jasmine({ projectBaseDir: path.join(__dirname, projectBaseDir) });
+jasmine.loadConfig({});
 jasmine.addReporter(new JasmineSpecReporter({}));
-jasmine.loadConfigFile(path.join(projectBaseDir, 'jasmine.json'));
 
 // Run the tests.
-jasmine.execute([ path.normalize('**/*.spec.ts') ]);
+jasmine.execute([ path.join(projectBaseDir, '**/*.spec.js') ]);
 
