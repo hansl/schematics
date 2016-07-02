@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+'use strict';
+
 const path = require("path");
 const Jasmine = require("jasmine");
 const JasmineSpecReporter = require('jasmine-spec-reporter');

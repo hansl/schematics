@@ -4,12 +4,8 @@ import * as mockFs from 'mock-fs';
 import * as glob from 'glob';
 import * as path from 'path';
 
-import {
-    Context,
-    Compiler,
-    FileSink,
-    FileSource
-} from '../index';
+import {Context, Compiler} from '../index';
+import {FileSink, FileSource} from './files';
 
 import 'rxjs/add/operator/count';
 import 'rxjs/add/operator/map';
@@ -20,6 +16,7 @@ import 'rxjs/add/operator/toPromise';
 describe('FileSource', () => {
   let nbCompiled = 0;
   let nbRendered = 0;
+
   const compiler: Compiler = {
     compile: (content: string) => {
       nbCompiled++;

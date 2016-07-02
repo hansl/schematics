@@ -4,9 +4,12 @@
   "description": "Blueprint library for TypeScript.",
   "main": "index.js",
   "scripts": {
+    "build:watch": "tsc -w -p src",
     "build": "tsc -p src",
-    "test": "npm run build && npm run test:coverage",
+    "test": "npm run build && ./scripts/run-spec.js",
+    "test:ci": "npm run build && npm run test:coverage",
     "test:coverage": "npm run coverage:test && npm run coverage:remap && npm run coverage:report",
+    "test:watch": "./scripts/run-watch.js",
     "coverage:test": "rm -rf coverage; istanbul cover -x '**/*.spec.js' -i '**/*.js'  --report lcovonly --root dist ./scripts/run-spec.js",
     "coverage:remap": "remap-istanbul --input coverage/coverage.json --output coverage/coverage.json",
     "coverage:report": "istanbul report html"
