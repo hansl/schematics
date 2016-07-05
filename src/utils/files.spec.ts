@@ -4,7 +4,9 @@ import * as mockFs from 'mock-fs';
 import * as glob from 'glob';
 import * as path from 'path';
 
-import {Context, Compiler} from '../index';
+import {IdentityCompiler} from '../api/compiler';
+import {StaticEntry} from '../api/entry';
+import {Context, Compiler, Entry} from '../index';
 import {FileSink, FileSource} from './files';
 
 import 'rxjs/add/operator/count';
@@ -18,11 +20,11 @@ describe('FileSource', () => {
   let nbRendered = 0;
 
   const compiler: Compiler = {
-    compile: (content: string) => {
+    compile: (entry: Entry) => {
       nbCompiled++;
       return (context: Context) => {
         nbRendered++;
-        return '';
+        return new StaticEntry(entry.path, entry.name, '');
       };
     }
   };
@@ -56,12 +58,12 @@ describe('FileSource', () => {
 
   it('will compile', (done: any) => {
     FileSource.loadFrom(path.join('blueprints', 'template1'), compiler)
-      .map(entry => entry.scaffold({}))
+      .map(entry => entry.transform({}))
       .toArray()
       .toPromise()
       .then(all => Promise.all(all))
       .then(allCompiledText => {
-        allCompiledText.forEach(content => expect(content).toBe(''));
+        allCompiledText.forEach(entry => expect(entry.content).toBe(''));
         expect(nbRendered).toBe(nbCompiled);
       })
       .then(done, done.fail);
@@ -103,9 +105,7 @@ describe('FileSink', () => {
   afterEach(() => mockFs.restore());
 
   it('can write files', (done: any) => {
-    const compiler: Compiler = {
-      compile: (content: string) => () => ''
-    };
+    const compiler: Compiler = new IdentityCompiler();
 
     const root = 'output';
     const expected = [
@@ -119,7 +119,7 @@ describe('FileSink', () => {
     sink.init();
 
     FileSource.loadFrom(path.join('blueprints', 'template1'), compiler)
-      .map(entry => sink.write(entry, ''))
+      .map(entry => Promise.resolve(entry.transform({})).then(entry => sink.write(entry)))
       .toArray()
       .toPromise()
       .then(all => Promise.all(all))

@@ -7,7 +7,7 @@ export interface Sink {
   // This should throw to propagate, or swallow the error.
   error(err: any): void;
 
-  write(entry: Entry, content: string): Promise<void> | void;
+  write(entry: Entry): Promise<void> | void;
 }
 
 export abstract class SimpleSink implements Sink {
@@ -15,5 +15,5 @@ export abstract class SimpleSink implements Sink {
   done() {}
   error(err: any) { throw err; }
 
-  abstract write(entry: Entry, content: string): Promise<void> | void;
+  abstract write(entry: Entry): Promise<void> | void;
 }

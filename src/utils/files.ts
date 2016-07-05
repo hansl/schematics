@@ -31,6 +31,7 @@ class FileSourceEntry implements Entry {
 
   get name(): string { return this._name; }
   get path(): string { return this._path; }
+  get content(): string { return this._template; }
 
   get template(): string {
     return this._template;
@@ -38,13 +39,13 @@ class FileSourceEntry implements Entry {
   set template(v: string) {
     this._template = v;
     if (v !== null) {
-      this._compiled = this._compiler.compile(this._template);
+      this._compiled = this._compiler.compile(this);
     } else {
       this._compiled = null;
     }
   }
 
-  scaffold(context?: Context): Promise<string> {
+  transform(context?: Context): Promise<Entry> {
     return Promise.resolve()
       .then(() => this._compiled)
       .then(compiler => compiler ? compiler(context || {}) : null);
@@ -134,7 +135,7 @@ export class FileSink extends SimpleSink {
     super();
   }
 
-  write(entry: Entry, content: string): Promise<void> {
+  write(entry: Entry): Promise<void> {
     const dir = path.join(this._root, entry.path);
 
     return stat(dir)
@@ -158,6 +159,6 @@ export class FileSink extends SimpleSink {
         }
       })
       // This will error with the appropriate error if there's a permission problem.
-      .then(() => writeFile(path.join(dir, entry.name), content, 'utf-8'));
+      .then(() => writeFile(path.join(dir, entry.name), entry.content, 'utf-8'));
   }
 }

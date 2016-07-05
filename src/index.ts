@@ -1,3 +1,4 @@
+export { Entry } from './api/entry';
 export { Source } from './api/source';
 export { Compiler } from './api/compiler';
 export { Context } from './api/entry';
