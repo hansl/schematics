@@ -2,10 +2,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Observable} from 'rxjs/Observable';
-import {Subject} from 'rxjs/Subject';
+import {ReplaySubject} from 'rxjs/ReplaySubject';
 
 import {Compiler, CompiledFn} from '../api/compiler';
-import {Entry, Context} from '../api/entry';
+import {Entry, Context, CompilableEntry} from '../api/entry';
 import {SimpleSink} from '../api/sink';
 import {Source} from '../api/source';
 import {promisify} from '../utils/promisify';
@@ -19,56 +19,6 @@ const readDir = promisify(fs.readdir);
 const readFile = promisify(fs.readFile);
 const stat = promisify(fs.stat);
 const writeFile = promisify(fs.writeFile);
-
-
-class FileSourceEntry implements Entry {
-  private _template: string = null;
-  private _compiled: Promise<CompiledFn> | CompiledFn;
-
-  constructor(private _name: string, private _path: string, private _compiler: Compiler) {
-    this._path = _path || '/'
-  }
-
-  get name(): string { return this._name; }
-  get path(): string { return this._path; }
-  get content(): string { return this._template; }
-
-  get template(): string {
-    return this._template;
-  }
-  set template(v: string) {
-    this._template = v;
-    if (v !== null) {
-      this._compiled = this._compiler.compile(this);
-    } else {
-      this._compiled = null;
-    }
-  }
-
-  transform(context?: Context): Promise<Entry> {
-    return Promise.resolve()
-      .then(() => this._compiled)
-      .then(compiler => compiler ? compiler(context || {}) : null);
-  }
-
-  /**
-   * Asynchronously create a file and return its entry.
-   * @param p The full path of the file to create.
-   * @param entryPath The path of the entry.
-   * @param compiler The Compiler to use for the entry.
-   * @returns A promise of the entry.
-   */
-  static create(p: string, entryPath: string = p, compiler: Compiler): Promise<Entry> {
-    return readFile(p, 'utf-8')
-      .then(content => {
-        const entry = new FileSourceEntry(path.basename(entryPath),
-                                          path.dirname(entryPath),
-                                          compiler);
-        entry.template = content;
-        return entry;
-      });
-  }
-}
 
 
 export class FileSource implements Source {
@@ -89,10 +39,10 @@ export class FileSource implements Source {
     }
 
     if (!stat.isDirectory()) {
-      return Observable.fromPromise(FileSourceEntry.create(fullPath, p, this._compiler));
+      return Observable.fromPromise(FileSource.createEntry(fullPath, p, this._compiler));
     }
 
-    const s = new Subject<Entry>();
+    const s = new ReplaySubject<Entry>();
     readDir(fullPath).then((files: string[]) => {
       const children: Promise<void>[] = [];
       files.forEach((name: string) => {
@@ -112,12 +62,12 @@ export class FileSource implements Source {
 
   read(): Observable<Entry> {
     // We need to verify once if it's a file that we're importing.
-    var stat = fs.statSync(this._path);
+    const stat = fs.statSync(this._path);
     if (!stat) {
       return Observable.empty();
     }
     if (!stat.isDirectory()) {
-      const promise = FileSourceEntry.create(this._path, path.basename(this._path), this._compiler);
+      const promise = FileSource.createEntry(this._path, path.basename(this._path), this._compiler);
       return Observable.fromPromise(promise);
     }
 
@@ -126,6 +76,25 @@ export class FileSource implements Source {
 
   static loadFrom(p: string, compiler: Compiler): Observable<Entry> {
     return (new this(p, compiler)).read();
+  }
+
+  /**
+   * Asynchronously create a file and return its entry.
+   * @param fullPath The full path of the file to create.
+   * @param entryPath The path of the entry.
+   * @param compiler The Compiler to use for the entry.
+   * @returns A promise of the entry.
+   */
+  static createEntry(fullPath: string,
+                     entryPath: string = fullPath,
+                     compiler: Compiler): Promise<Entry> {
+    return readFile(fullPath, 'utf-8')
+      .then(content => {
+        const entry = new CompilableEntry(path.dirname(entryPath), path.basename(entryPath),
+                                          compiler);
+        entry.template = content;
+        return entry;
+      });
   }
 }
 

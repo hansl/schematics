@@ -1,3 +1,6 @@
+import {Compiler, CompiledFn} from 'api/compiler';
+
+
 export type Context = { [name: string]: any };
 export type TransformerFn = (entry: Entry, context?: Context) => Promise<Entry> | Entry;
 
@@ -11,6 +14,38 @@ export interface Entry {
   readonly content: string;
 
   transform(context: Context): Promise<Entry> | Entry;
+}
+
+
+export class CompilableEntry implements Entry {
+  private _template: string = null;
+  private _compiled: Promise<CompiledFn> | CompiledFn;
+
+  get name(): string { return this._name; }
+  get path(): string { return this._path; }
+  get content(): string { return this._template; }
+
+  constructor(private _path: string, private _name: string, private _compiler: Compiler) {
+    this._path = _path || '/'
+  }
+
+  get template(): string {
+    return this._template;
+  }
+  set template(v: string) {
+    this._template = v;
+    if (v !== null) {
+      this._compiled = this._compiler.compile(this);
+    } else {
+      this._compiled = null;
+    }
+  }
+
+  transform(context?: Context): Promise<Entry> {
+    return Promise.resolve()
+      .then(() => this._compiled)
+      .then(compiler => compiler ? compiler(context || {}) : null);
+  }
 }
 
 
