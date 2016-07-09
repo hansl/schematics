@@ -1,4 +1,4 @@
-import {Compiler, CompiledFn} from 'api/compiler';
+import {Compiler, CompiledFn} from '../api/compiler';
 
 
 export type Context = { [name: string]: any };

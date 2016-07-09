@@ -1,19 +1,25 @@
 import * as path from 'path';
 
+import {Inject} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
 import {ReplaySubject} from 'rxjs/ReplaySubject';
 
 import {Compiler} from '../api/compiler';
 import {Entry, CompilableEntry} from '../api/entry';
 import {Source} from '../api/source';
+import {SimpleSink} from '../api/sink';
 
 
 export type MemorySourceFn = (p: string, s: MemorySource) => string;
 export type MemorySourceMap = {[path: string]: MemorySourceMap | MemorySourceFn | string};
+export const MEMORY_SOURCE_MAP_TOKEN = Symbol();
 
 
-export class MemorySource implements Source {
-  constructor(private _map: MemorySourceMap, private _compiler: Compiler) {}
+export class MemorySource extends Source {
+  constructor(@Inject(MEMORY_SOURCE_MAP_TOKEN) private _map: MemorySourceMap,
+              @Inject(Compiler) private _compiler: Compiler) {
+    super();
+  }
 
   private _recursivelyRead(s: ReplaySubject<Entry>, parentPath: string, map: MemorySourceMap) {
     for (const p of Object.keys(map)) {
@@ -49,5 +55,16 @@ export class MemorySource implements Source {
 
   static loadFrom(map: MemorySourceMap, compiler: Compiler): Observable<Entry> {
     return new this(map, compiler).read();
+  }
+}
+
+
+export class MemorySink extends SimpleSink {
+  private _files: { [path: string]: string } = {};
+
+  get files() { return this._files; }
+
+  write(entry: Entry): Promise<void> | void {
+    this._files[path.join(entry.path, entry.name)] = entry.content;
   }
 }

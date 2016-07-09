@@ -3,6 +3,6 @@ import {Observable} from 'rxjs/Observable';
 import {Entry} from './entry';
 
 
-export interface Source {
-  read(): Observable<Entry>;
+export abstract class Source {
+  abstract read(): Observable<Entry>;
 }

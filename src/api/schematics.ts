@@ -1,12 +1,14 @@
+import {Type} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
+
 import {Entry, Context} from './entry';
+import {Sink} from '../api/sink';
 
 import 'reflect-metadata';
+import 'rxjs/add/operator/distinct';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toArray';
 import 'rxjs/add/operator/toPromise';
-import {Type} from '@angular/core';
-import {Sink} from 'api/sink';
 
 
 export function Variable(): PropertyDecorator {
@@ -50,7 +52,9 @@ export abstract class Schematic {
     sink.init();
 
     return this.build()
-      .distinct()
+      .distinct((a, b) => {
+        return (a.path == b.path && a.name == b.name);
+      })
       .map(entry => {
         return Promise.resolve()
           .then(() => entry.transform(this))

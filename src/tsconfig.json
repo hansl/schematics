@@ -12,8 +12,6 @@
     "rootDir": ".",
     "sourceMap": true,
     "sourceRoot": "",
-    "target": "es5",
-
-    "baseUrl": ""
+    "target": "es5"
   }
 }
