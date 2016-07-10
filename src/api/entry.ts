@@ -18,6 +18,7 @@ export interface Entry {
 
 
 export class CompilableEntry implements Entry {
+  private _path: string;
   private _template: string = null;
   private _compiled: Promise<CompiledFn> | CompiledFn;
 
@@ -25,8 +26,8 @@ export class CompilableEntry implements Entry {
   get path(): string { return this._path; }
   get content(): string { return this._template; }
 
-  constructor(private _path: string, private _name: string, private _compiler: Compiler) {
-    this._path = _path || '/'
+  constructor(path: string, private _name: string, private _compiler: Compiler) {
+    this._path = path || '/';
   }
 
   get template(): string {
@@ -59,13 +60,17 @@ export class StaticEntry implements Entry {
 
 
 export class MoveEntry implements Entry {
-  constructor(private _entry: Entry, private _name: string, private _path: string) {}
+  constructor(private _entry: Entry, private _path: string, private _name: string) {}
 
   get name() { return this._name; }
   get path() { return this._path; }
   get content() { return this._entry.content; }
 
-  transform(context: Context) { return this._entry.transform(context); }
+  transform(context: Context) {
+    return Promise.resolve()
+      .then(() => this._entry.transform(context))
+      .then(newE => new MoveEntry(newE, this._path, this._name));
+  }
 }
 
 

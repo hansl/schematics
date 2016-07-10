@@ -16,4 +16,3 @@ jasmine.addReporter(new JasmineSpecReporter({}));
 
 // Run the tests.
 jasmine.execute([ path.join(projectBaseDir, '**/*.spec.js') ]);
-

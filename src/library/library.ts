@@ -3,12 +3,11 @@ import {Injector, Provider, ReflectiveInjector, Type} from '@angular/core';
 import {Schematic} from '../api/schematics';
 import {BaseException} from '../core/exception';
 import {Compiler} from '../api/compiler';
-import {Source} from '../api/source';
 import {Sink} from '../api/sink';
 
 
-export class SchematicAlreadyRegistered extends BaseException {}
-export class SchematicUnknown extends BaseException {}
+export class SchematicAlreadyRegisteredException extends BaseException {}
+export class SchematicUnknownException extends BaseException {}
 
 
 export type Providers = Array<Type | Provider | { [k: string]: any; } | any[]>;
@@ -39,7 +38,7 @@ export class Library {
 
   register<U extends Schematic>(name: string, schematic: SchematicType<U>) {
     if (this._registry[name] != null) {
-      throw new SchematicAlreadyRegistered(name);
+      throw new SchematicAlreadyRegisteredException(name);
     }
 
     this._registry[name] = schematic;
@@ -48,7 +47,7 @@ export class Library {
 
   create(name: string): Schematic {
     if (this._registry[name] == null) {
-      throw new SchematicUnknown(name);
+      throw new SchematicUnknownException(name);
     }
     if (!this._injector) {
       this._createInjector();

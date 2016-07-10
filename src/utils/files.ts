@@ -8,17 +8,33 @@ import {Compiler, CompiledFn} from '../api/compiler';
 import {Entry, Context, CompilableEntry} from '../api/entry';
 import {SimpleSink} from '../api/sink';
 import {Source} from '../api/source';
+import {BaseException} from '../core/exception';
 import {promisify} from '../utils/promisify';
 
 import 'rxjs/add/observable/empty';
 import 'rxjs/add/observable/from';
 import 'rxjs/add/observable/fromPromise';
+import 'rxjs/add/observable/throw';
+import ErrnoException = NodeJS.ErrnoException;
 
 
 const readDir = promisify(fs.readdir);
 const readFile = promisify(fs.readFile);
 const stat = promisify(fs.stat);
 const writeFile = promisify(fs.writeFile);
+
+
+export class FileSystemException extends BaseException {
+  constructor(public internalError: ErrnoException) {
+    super();
+  }
+
+  get code(): string { return this.internalError.code; }
+  get message(): string { return this.internalError.message; }
+}
+
+
+export class SourceRootMustBeDirectoryException extends BaseException {}
 
 
 export class FileSource implements Source {
@@ -29,10 +45,11 @@ export class FileSource implements Source {
     let stat: fs.Stats = null;
 
     try {
+      fs.accessSync(fullPath, fs.R_OK);
       stat = fs.statSync(fullPath);
     } catch (e) {
-      if (e.code !== 'ENOENT') {
-        return Observable.throw(e);
+      if (e.code != 'ENOENT') {
+        return Observable.throw(new FileSystemException(e));
       } else {
         return Observable.empty();
       }
@@ -44,31 +61,35 @@ export class FileSource implements Source {
 
     const s = new ReplaySubject<Entry>();
     readDir(fullPath).then((files: string[]) => {
-      const children: Promise<void>[] = [];
-      files.forEach((name: string) => {
-        const p2 = path.join(p, name);
-        children.push(this._loadFrom(root, p2).forEach(entry => s.next(entry)));
+      const promises = files.map((name: string) => {
+        return this._loadFrom(root, path.join(p, name)).forEach(entry => s.next(entry));
       });
 
       // Complete the current subject once every children is done.
-      Promise.all(children).then(() => s.complete()).catch((err) => {
-        s.error(err)
-      });
-    }, (err: Error) => {
-      s.error(err);
+      Promise.all(promises)
+        .then(() => s.complete())
+        .catch((err) => {
+          s.error(err);
+        });
     });
     return s.asObservable();
   }
 
   read(): Observable<Entry> {
     // We need to verify once if it's a file that we're importing.
-    const stat = fs.statSync(this._path);
-    if (!stat) {
-      return Observable.empty();
+    let stat: fs.Stats;
+    try {
+      fs.accessSync(this._path, fs.R_OK);
+      stat = fs.statSync(this._path);
+    } catch (err) {
+      if (err.code == 'ENOENT') {
+        return Observable.empty();
+      } else {
+        return Observable.throw(new FileSystemException(err));
+      }
     }
     if (!stat.isDirectory()) {
-      const promise = FileSource.createEntry(this._path, path.basename(this._path), this._compiler);
-      return Observable.fromPromise(promise);
+      return Observable.throw(new SourceRootMustBeDirectoryException());
     }
 
     return this._loadFrom(this._path, '');
@@ -94,6 +115,8 @@ export class FileSource implements Source {
                                           compiler);
         entry.template = content;
         return entry;
+      }, (err) => {
+        throw new FileSystemException(err);
       });
   }
 }
@@ -113,18 +136,17 @@ export class FileSink extends SimpleSink {
           throw e;
         }
 
-        let p = '';
-        const dirFragment = dir.split(path.sep);
-        for (const current of dirFragment) {
-          const currentPath = path.join(p, current);
+        let currentPath = dir;
+        while (currentPath) {
           try {
             fs.mkdirSync(currentPath);
           } catch (e) {
             if (e.code !== 'EEXIST') {
               throw e;
             }
+            break;
           }
-          p = currentPath;
+          currentPath = path.dirname(currentPath);
         }
       })
       // This will error with the appropriate error if there's a permission problem.

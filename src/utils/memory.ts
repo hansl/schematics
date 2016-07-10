@@ -50,7 +50,7 @@ export class MemorySource extends Source {
       s.error(err);
     }
     s.complete();
-    return s;
+    return s.asObservable();
   }
 
   static loadFrom(map: MemorySourceMap, compiler: Compiler): Observable<Entry> {
