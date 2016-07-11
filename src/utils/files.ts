@@ -48,11 +48,7 @@ export class FileSource implements Source {
       fs.accessSync(fullPath, fs.R_OK);
       stat = fs.statSync(fullPath);
     } catch (e) {
-      if (e.code != 'ENOENT') {
-        return Observable.throw(new FileSystemException(e));
-      } else {
-        return Observable.empty();
-      }
+      return Observable.throw(new FileSystemException(e));
     }
 
     if (!stat.isDirectory()) {
