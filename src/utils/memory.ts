@@ -30,7 +30,7 @@ export class MemorySource extends Source {
 
       if (typeof value == 'function') {
         const entry = new CompilableEntry(dir, name, this._compiler);
-        entry.template = value(p, this);
+        entry.template = value(path.join(dir, p), this);
         s.next(entry);
       } else if (typeof value == 'string') {
         const entry = new CompilableEntry(dir, name, this._compiler);

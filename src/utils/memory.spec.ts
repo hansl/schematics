@@ -87,4 +87,40 @@ describe('MemorySource', () => {
       })
       .then(done, done.fail);
   });
+
+  it('can call methods', (done) => {
+    const ms = new MemorySource({
+      'file1': (p, m) => {
+        expect(m).toBe(ms);
+        expect(p).toBe('file1');
+        return 'hello world';
+      },
+      'dir': {
+        'file2': (p, m) => {
+          expect(m).toBe(ms);
+          expect(p).toBe('dir/file2');
+          return 'hello world 2';
+        }
+      }
+    }, compiler);
+
+    ms.read()
+      .map(entry => entry.content)
+      .toArray()
+      .toPromise()
+      .then(entries => {
+        expect(entries).toEqual(['hello world', 'hello world 2']);
+      })
+      .then(done, done.fail);
+  });
+
+  it('will propagate errors', (done) => {
+    const err = new Error('hello world');
+    MemorySource.loadFrom({ 'file1': () => { throw err; } }, compiler)
+      .toPromise()
+      .then(() => done.fail(), (e) => {
+        expect(e).toBe(err);
+      })
+      .then(done, done.fail);
+  });
 });

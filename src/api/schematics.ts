@@ -1,5 +1,6 @@
 import {Type} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
+import {Subject} from 'rxjs/Subject';
 
 import {Entry, Context} from './entry';
 import {Sink} from '../api/sink';
@@ -23,9 +24,23 @@ export function Variable(): PropertyDecorator {
 
 
 export abstract class Schematic {
+  abstract build(): Observable<Entry>;
+
   private readonly __variables: { [name: string]: Type };
 
-  abstract build(): Observable<Entry>;
+  private _beforeInstallSubject: Subject<void> = new Subject<void>();
+  private _afterInstallSubject: Subject<void> = new Subject<void>();
+  private _beforeWriteEntrySubject: Subject<Entry> = new Subject<Entry>();
+  private _afterWriteEntrySubject: Subject<Entry> = new Subject<Entry>();
+  private _beforeTransformSubject: Subject<Entry> = new Subject<Entry>();
+  private _afterTransformSubject: Subject<Entry> = new Subject<Entry>();
+
+  beforeInstall: Observable<void> = this._beforeInstallSubject.asObservable();
+  afterInstall: Observable<void> = this._afterInstallSubject.asObservable();
+  beforeWriteEntry: Observable<Entry> = this._beforeWriteEntrySubject.asObservable();
+  afterWriteEntry: Observable<Entry> = this._afterWriteEntrySubject.asObservable();
+  beforeTransformEntry: Observable<Entry> = this._beforeTransformSubject.asObservable();
+  afterTransformEntry: Observable<Entry> = this._afterTransformSubject.asObservable();
 
   transform(context: Context): this {
     // Collect all the variables from all the parent prototypes.
@@ -51,18 +66,35 @@ export abstract class Schematic {
   install(sink: Sink): Promise<void> {
     sink.init();
 
+    this._beforeInstallSubject.next();
     return this.build()
-      .distinct((a, b) => {
-        return (a.path == b.path && a.name == b.name);
-      })
+      .distinct((a, b) => (a.path == b.path && a.name == b.name))
       .map(entry => {
         return Promise.resolve()
-          .then(() => entry.transform(this))
-          .then(entry => sink.write(entry));
+          .then(() => {
+            this._beforeTransformSubject.next(entry);
+            return entry.transform(this);
+          })
+          .then(transformedEntry => {
+            this._afterTransformSubject.next(transformedEntry);
+            return transformedEntry;
+          })
+          .then(transformedEntry => {
+            this._beforeWriteEntrySubject.next(transformedEntry);
+            return Promise.resolve()
+              .then(() => sink.write(transformedEntry))
+              .then(() => {
+                this._afterWriteEntrySubject.next(transformedEntry);
+              })
+          });
       })
       .toArray()
       .toPromise()
       .then((all) => Promise.all(all))
-      .then(() => { sink.done(); }, (err) => sink.error(err));
+      .then(() => {
+        this._afterInstallSubject.next();
+      })
+      .then(() => { sink.done(); })
+      .catch((err) => sink.error(err));
   }
 }

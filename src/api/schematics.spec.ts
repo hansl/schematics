@@ -4,24 +4,35 @@ import * as mockFs from 'mock-fs';
 import * as path from 'path';
 import {Observable} from 'rxjs/Observable';
 
+import {IdentityCompiler} from './compiler';
+import {Entry, CompilableEntry} from './entry';
 import {Schematic, Variable} from './schematics';
-import {Compiler, IdentityCompiler} from '../api/compiler';
-import {Context, Entry} from '../api/entry';
+import {SimpleSink} from './sink';
 import {FileSource, FileSink} from '../utils/files';
 
 import 'rxjs/add/observable/empty';
+import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/distinct';
 
 
 class EmptySchematic extends Schematic {
-  build() {
+  build(): Observable<Entry> {
     return Observable.empty();
+  }
+}
+
+class ErrorSink extends SimpleSink {
+  constructor(private _nb: number = 0) {
+    super();
+  }
+
+  write(entry: Entry): Promise<void> {
+    return Promise.reject(new Error('reason'));
   }
 }
 
 
 describe('Schematics', () => {
-
   it('can create schematics', () => {
     expect(() => new EmptySchematic()).not.toThrow();
   });
@@ -102,4 +113,19 @@ describe('Schematics', () => {
       });
   });
 
+  it('will reject on error', (done) => {
+    const sink = new ErrorSink();
+    class MySchematic extends Schematic {
+      build() {
+        return Observable.of(new CompilableEntry('', 'a', new IdentityCompiler()));
+      }
+    }
+    const s = new MySchematic();
+    s.transform({});
+    s.install(sink)
+      .then(() => done.fail(), (err) => {
+        expect(err.message).toBe('reason');
+        done();
+      });
+  });
 });

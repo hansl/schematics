@@ -1,11 +1,11 @@
 /// <reference path="../../node_modules/@types/jasmine/index.d.ts" />
-import {Injectable} from '@angular/core';
+import {Injectable, ReflectiveInjector} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
 
-import {Schematic, Variable} from '../index';
+import {Schematic} from '../index';
 import {Library} from './library';
-import {IdentityCompiler} from '../api/compiler';
-import {MemorySink, MemorySource, MemorySourceMap, MEMORY_SOURCE_MAP_TOKEN} from '../utils/memory';
+import {IdentityCompiler, Compiler} from '../api/compiler';
+import {MemorySink, MemorySource, MEMORY_SOURCE_MAP_TOKEN} from '../utils/memory';
 import {Source} from '../api/source';
 import {Sink} from '../api/sink';
 
@@ -56,7 +56,7 @@ describe('Library', () => {
     // Try to install the empty schematics.
     library.install('empty')
       .then(() => expect(sink.files).toEqual({}))
-      .then(() => library.install('simple'))
+      .then(() => library.install('simple', sink))
       .then(() => {
         expect(sink.files).toEqual({
           'file': 'hello world',
@@ -64,5 +64,52 @@ describe('Library', () => {
         });
       })
       .then(done, done.fail);
+  });
+
+  it('will inherit from a parent injector', (done) => {
+    const sink = new MemorySink();
+    const parentInjector = ReflectiveInjector.resolveAndCreate([
+      { provide: Compiler, useValue: new IdentityCompiler() },
+      { provide: Source, useValue: new MemorySource({
+        'file': 'hello world',
+        'dir/file2': 'woot'
+      }, new IdentityCompiler()) },
+      { provide: Sink, useValue: sink }
+    ], null);
+
+    @Injectable()
+    class SimpleSchematic extends Schematic {
+      constructor(private _source: Source) {
+        super();
+      }
+      build() {
+        return this._source.read();
+      }
+    }
+
+    const library = new Library(new IdentityCompiler(), parentInjector);
+    library.register('empty', EmptySchematic);
+    library.register('simple', SimpleSchematic);
+
+    // Create once to create the internal injector.
+    library.create('empty');
+    library.install('empty')
+      .then(() => expect(sink.files).toEqual({}))
+      .then(() => library.install('simple', sink))
+      .then(() => {
+        expect(sink.files).toEqual({
+          'file': 'hello world',
+          'dir/file2': 'woot'
+        });
+      })
+      .then(done, done.fail);
+  });
+
+  it('will throw on error', () => {
+    const library = new Library(new IdentityCompiler());
+
+    library.register('empty', EmptySchematic);
+    expect(() => library.register('empty', EmptySchematic)).toThrow();
+    expect(() => library.create('unknown')).toThrow();
   });
 });

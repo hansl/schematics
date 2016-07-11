@@ -18,6 +18,15 @@ describe('CompilableEntry', () => {
       .then(e => expect(e.content).toBe('abc'))
       .then(done, done.fail);
   });
+
+  it('can be set to null', () => {
+    const e1 = new CompilableEntry('a', 'b', new IdentityCompiler());
+    expect(e1.content).toBe(null);
+    e1.template = 'hello';
+    expect(e1.content).not.toBe(null);
+    e1.template = null;
+    expect(e1.content).toBe(null);
+  })
 });
 
 
