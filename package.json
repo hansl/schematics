@@ -33,7 +33,6 @@
     "glob": "^7.0.5",
     "istanbul": "^0.4.4",
     "jasmine": "^2.4.1",
-    "jasmine-spec-reporter": "^2.5.0",
     "mock-fs": "^3.9.0",
     "remap-istanbul": "^0.6.4",
     "ts-node": "^0.9.1"
