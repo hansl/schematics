@@ -9,7 +9,7 @@ import {MemorySource, MemorySink} from '../src/utils/memory';
 
 import 'rxjs/add/observable/empty';
 import 'rxjs/add/observable/of';
-import 'rxjs/add/operator/distinct';
+import 'rxjs/add/operator/merge';
 
 
 class EmptySchematic extends Schematic {
@@ -62,9 +62,48 @@ describe('Schematics', () => {
     expect(s.test).toBe(2);
   });
 
+  it('will remove duplicates', (done) => {
+    const template1 = {
+      'file1': 'some content.',
+      'dir': {
+        'file2': 'some other content.'
+      }
+    };
+    const template2 = {
+      'file3': 'some content.',
+      'dir': {
+        'file2': 'blue.'
+      }
+    };
+    const compiler = new IdentityCompiler();
+
+    class MySchematic extends Schematic {
+      build() {
+        return MemorySource.loadFrom(template1, compiler)
+          .merge(MemorySource.loadFrom(template2, compiler));
+      }
+    }
+
+    const s = new MySchematic();
+    const sink = new MemorySink();
+    const expected = [
+      path.join('file1'),
+      path.join('file3'),
+      path.join('dir', 'file2')
+    ];
+
+    s.transform({});
+    s.install(sink)
+      .then(() => {
+        const actual = sink.files;
+        expect(Object.keys(actual).sort()).toEqual(expected.sort());
+        // The first file should remain.
+        expect(actual['dir/file2']).toBe('some other content.');
+      })
+      .then(done, done.fail);
+  });
+
   it('can install', (done) => {
-    // Setup the file system with two non-empty files.
-    // We don't use a compiler, compilers are tested elsewhere.
     const template = {
       'file1': 'some content.',
       'dir': {

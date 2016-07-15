@@ -13,10 +13,10 @@ import 'rxjs/add/operator/toPromise';
 
 export function Variable(): PropertyDecorator {
   return function(target: Object, propertyKey: string | symbol) {
-    if (Object.getPrototypeOf(target).__variables === undefined) {
-      Object.getPrototypeOf(target).__variables = Object.create(null);
+    if (Object.getPrototypeOf(target)._$variables === undefined) {
+      Object.getPrototypeOf(target)._$variables = Object.create(null);
     }
-    Object.getPrototypeOf(target).__variables[propertyKey] =
+    Object.getPrototypeOf(target)._$variables[propertyKey] =
         Reflect.getMetadata('design:type', target, propertyKey);
   };
 }

@@ -191,15 +191,19 @@ describe('FileSink', () => {
             'file4': ''
           }
         }
-      }
+      },
+      'output-noaccess': mockFs.directory({
+        mode: 0,
+        items: {}
+      })
     });
   });
   afterEach(() => mockFs.restore());
 
   it('can write files', (done: any) => {
     const compiler: Compiler = new IdentityCompiler();
+    const root = path.join(process.cwd(), 'blueprints/template1');
 
-    const root = 'output';
     const expected = [
       path.join(root, 'file1'),
       path.join(root, 'dir', 'file2'),
@@ -207,7 +211,7 @@ describe('FileSink', () => {
       path.join(root, 'dir', 'dir2', 'file4')
     ];
 
-    const sink = new FileSink(root);
+    const sink = new FileSink();
     sink.init();
 
     FileSource.loadFrom(path.join('blueprints', 'template1'), compiler)
@@ -224,6 +228,22 @@ describe('FileSink', () => {
 
   it('will error if files already exist', (done) => {
     const root = path.join('blueprints', 'template1');
+    const sink = new FileSink(root);
+    sink.init();
+
+    FileSource.loadFrom(path.join('blueprints', 'template1'), new IdentityCompiler())
+      .map(entry => Promise.resolve(entry.transform({})).then(e => sink.write(e)))
+      .toArray()
+      .toPromise()
+      .then(all => Promise.all(all))
+      .then(() => done.fail, (err) => {
+        expect(err instanceof FileSystemException).toBe(true);
+      })
+      .then(done, done.fail);
+  });
+
+  it('will error if no access', (done) => {
+    const root = 'output-noaccess';
     const sink = new FileSink(root);
     sink.init();
 

@@ -6,31 +6,41 @@ const fs = require('fs');
 const path = require('path');
 
 
-let debounced = false;
-function buildTests() {
-  const script = path.resolve('node_modules/.bin/tsc');
-  const output = execSync(`${script} -p tests`, { encoding: 'utf-8' });
-  console.log(output);
-}
-function runTests() {
-  buildTests();
+function debounce(fn, wait) {
+  let debounced = false;
+  return function() {
+    if (debounced) {
+      return;
+    }
+    const context = this;
+    const args = arguments;
 
-  debounced = false;
-  const script = path.join(__dirname, 'run-spec.js');
-  const output = execSync(script, { encoding: 'utf-8' });
-  console.log(output);
+    debounced = true;
+    setTimeout(function() {
+      debounced = false;
+      fn.apply(context, args);
+    }, wait || 100)
+  };
 }
+
+
+const runTests = debounce(() => {
+  console.log('Change detected... Running the tests');
+
+  try {
+    let output = execSync(`${path.resolve('node_modules/.bin/tsc')} -p tests`);
+    console.log(output.toString());
+
+    output = execSync(path.join(__dirname, 'run-spec.js'));
+    console.log(output.toString());
+  } catch (err) {
+    console.error('An error occured:', err.stderr.toString());
+  }
+});
+
 // Run once.
 runTests();
 
 
-fs.watch(path.join(__dirname, '..'), { recursive: true }, function(event, fileName) {
-  if (!fileName || /\.js$/.test(fileName)) {
-    return;
-  }
-  if (!debounced) {
-    debounced = true;
-    console.log('Detected changes... rebuilding and running');
-    setTimeout(runTests, 10);
-  }
-});
+fs.watch(path.join(__dirname, '../src'), { recursive: true }, runTests);
+fs.watch(path.join(__dirname, '../tests'), { recursive: true }, runTests);

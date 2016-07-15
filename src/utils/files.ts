@@ -102,9 +102,7 @@ export class FileSource implements Source {
    * @param compiler The Compiler to use for the entry.
    * @returns A promise of the entry.
    */
-  static createEntry(fullPath: string,
-                     entryPath: string = fullPath,
-                     compiler: Compiler): Promise<Entry> {
+  static createEntry(fullPath: string, entryPath: string, compiler: Compiler): Promise<Entry> {
     return readFile(fullPath, 'utf-8')
       .then(content => {
         const entry = new CompilableEntry(path.dirname(entryPath), path.basename(entryPath),
@@ -137,15 +135,15 @@ export class FileSink extends SimpleSink {
           try {
             fs.mkdirSync(currentPath);
           } catch (e) {
-            if (e.code !== 'EEXIST') {
-              throw e;
-            }
             break;
           }
           currentPath = path.dirname(currentPath);
         }
       })
       // This will error with the appropriate error if there's a permission problem.
-      .then(() => writeFile(path.join(dir, entry.name), entry.content, 'utf-8'));
+      .then(() => writeFile(path.join(dir, entry.name), entry.content, 'utf-8'))
+      .catch((err) => {
+        return new FileSystemException(err);
+      });
   }
 }
