@@ -176,6 +176,20 @@ describe('FileSource', () => {
       })
       .then(done, done.fail);
   });
+
+  describe('createEntry', () => {
+    it('will error', (done) => {
+      FileSource.createEntry(path.normalize('blueprints/template2/fileNOACCESS'),
+                              'a/b/c', new IdentityCompiler())
+        .then(() => {
+          expect(true).toBe(false);
+        }, (err) => {
+          expect(err instanceof FileSystemException).toBe(true);
+        })
+        .then(done, done.fail);
+
+    });
+  });
 });
 
 describe('FileSink', () => {
@@ -258,3 +272,4 @@ describe('FileSink', () => {
       .then(done, done.fail);
   });
 });
+

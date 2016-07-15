@@ -69,3 +69,19 @@ describe('TransformEntry', () => {
       .then(done, done.fail);
   });
 });
+
+
+describe('StaticEntry', () => {
+  it('works', (done) => {
+    const e1 = new StaticEntry('a', 'b', 'hello world');
+
+    Promise.resolve()
+      .then(() => e1.transform({}))
+      .then(e2 => {
+        expect(e2.path).toBe(e1.path);
+        expect(e2.name).toBe(e1.name);
+        expect(e2.content).toBe(e1.content);
+      })
+      .then(done, done.fail);
+  });
+});
