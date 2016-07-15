@@ -14,7 +14,7 @@
       "../src"
     ],
     "sourceMap": true,
-    "sourceRoot": "",
+    "sourceRoot": "..",
     "target": "es5"
   },
   "include": [

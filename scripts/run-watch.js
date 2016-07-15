@@ -24,12 +24,13 @@ function runTests() {
 runTests();
 
 
-fs.watch(path.join(__dirname, '../dist'), { recursive: true }, function(event, fileName) {
+fs.watch(path.join(__dirname, '..'), { recursive: true }, function(event, fileName) {
   if (!fileName || /\.js$/.test(fileName)) {
     return;
   }
   if (!debounced) {
     debounced = true;
+    console.log('Detected changes... rebuilding and running');
     setTimeout(runTests, 10);
   }
 });
