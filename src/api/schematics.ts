@@ -67,7 +67,9 @@ export abstract class Schematic {
 
     this._beforeInstallSubject.next();
     return this.build()
-      .distinct((a, b) => (a.path == b.path && a.name == b.name))
+      .distinct((a, b) => {
+        return (a.path == b.path && a.name == b.name);
+      })
       .map(entry => {
         return Promise.resolve()
           .then(() => {

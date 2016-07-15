@@ -1,6 +1,10 @@
-import {LodashTemplateCompiler, PathChangeCompiler, defaultCompiler} from '../src/utils/compilers';
-import {MemorySource, MemorySink} from '../src/utils/memory';
-import {Schematic, Variable} from '../src/api/schematics';
+import {
+  LodashTemplateCompiler,
+  PathChangeCompiler,
+  defaultCompiler
+} from '../../src/utils/compilers';
+import {MemorySource, MemorySink} from '../../src/utils/memory';
+import {Schematic, Variable} from '../../src/api/schematics';
 
 
 describe('LodashTemplateCompiler', () => {

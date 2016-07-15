@@ -2,15 +2,15 @@ import * as glob from 'glob';
 import * as mockFs from 'mock-fs';
 import * as path from 'path';
 
-import {Entry, StaticEntry} from '../src/api/entry';
-import {Compiler} from '../src/api/compiler';
-import {IdentityCompiler} from '../src/utils/compilers';
+import {Entry, StaticEntry} from '../../src/api/entry';
+import {Compiler} from '../../src/api/compiler';
+import {IdentityCompiler} from '../../src/utils/compilers';
 import {
   FileSink,
   FileSource,
   SourceRootMustBeDirectoryException,
   FileSystemException
-} from '../src/utils/files';
+} from '../../src/utils/files';
 
 import 'rxjs/add/operator/count';
 import 'rxjs/add/operator/map';
@@ -78,7 +78,7 @@ describe('FileSource', () => {
   afterEach(() => mockFs.restore());
 
   it('can load files', (done: any) => {
-    FileSource.loadFrom(path.join('blueprints', 'template1'), compiler)
+    FileSource.readFrom(path.join('blueprints', 'template1'), compiler)
       .count()
       .toPromise()
       .then(nb => {
@@ -89,7 +89,7 @@ describe('FileSource', () => {
   });
 
   it('will compile', (done: any) => {
-    FileSource.loadFrom(path.join('blueprints', 'template1'), compiler)
+    FileSource.readFrom(path.join('blueprints', 'template1'), compiler)
       .map(entry => entry.transform({}))
       .toArray()
       .toPromise()
@@ -107,7 +107,7 @@ describe('FileSource', () => {
       path.join('dir', 'file2')
     ];
 
-    FileSource.loadFrom(path.join('blueprints', 'template1'), compiler)
+    FileSource.readFrom(path.join('blueprints', 'template1'), compiler)
       .map(entry => path.join(entry.path, entry.name))
       .toArray()
       .toPromise()
@@ -118,7 +118,7 @@ describe('FileSource', () => {
   });
 
   it('will error if user cannot access the file', (done: any) => {
-    FileSource.loadFrom(path.join('blueprints', 'template2'), compiler)
+    FileSource.readFrom(path.join('blueprints', 'template2'), compiler)
       .map(entry => path.join(entry.path, entry.name))
       .toArray()
       .toPromise()
@@ -131,7 +131,7 @@ describe('FileSource', () => {
   });
 
   it('will error if user cannot access the file (deep)', (done: any) => {
-    FileSource.loadFrom(path.join('blueprints', 'template7'), compiler)
+    FileSource.readFrom(path.join('blueprints', 'template7'), compiler)
       .map(entry => path.join(entry.path, entry.name))
       .toArray()
       .toPromise()
@@ -144,7 +144,7 @@ describe('FileSource', () => {
   });
 
   it('will error if user cannot access the root directory', (done: any) => {
-    FileSource.loadFrom(path.join('blueprints', 'template3'), compiler)
+    FileSource.readFrom(path.join('blueprints', 'template3'), compiler)
       .toArray()
       .toPromise()
       .then(() => {
@@ -156,7 +156,7 @@ describe('FileSource', () => {
   });
 
   it('will be empty if root directory does not exist', (done: any) => {
-    FileSource.loadFrom(path.join('blueprints', 'template4'), compiler)
+    FileSource.readFrom(path.join('blueprints', 'template4'), compiler)
       .toArray()
       .toPromise()
       .then(entries => {
@@ -166,7 +166,7 @@ describe('FileSource', () => {
   });
 
   it('will be a single file if the blueprint is a file', (done: any) => {
-    FileSource.loadFrom(path.join('blueprints', 'template6'), compiler)
+    FileSource.readFrom(path.join('blueprints', 'template6'), compiler)
       .toArray()
       .toPromise()
       .then(() => {
@@ -228,7 +228,7 @@ describe('FileSink', () => {
     const sink = new FileSink();
     sink.init();
 
-    FileSource.loadFrom(path.join('blueprints', 'template1'), compiler)
+    FileSource.readFrom(path.join('blueprints', 'template1'), compiler)
       .map(entry => Promise.resolve(entry.transform({})).then(e => sink.write(e)))
       .toArray()
       .toPromise()
@@ -245,7 +245,7 @@ describe('FileSink', () => {
     const sink = new FileSink(root);
     sink.init();
 
-    FileSource.loadFrom(path.join('blueprints', 'template1'), new IdentityCompiler())
+    FileSource.readFrom(path.join('blueprints', 'template1'), new IdentityCompiler())
       .map(entry => Promise.resolve(entry.transform({})).then(e => sink.write(e)))
       .toArray()
       .toPromise()
@@ -261,7 +261,7 @@ describe('FileSink', () => {
     const sink = new FileSink(root);
     sink.init();
 
-    FileSource.loadFrom(path.join('blueprints', 'template1'), new IdentityCompiler())
+    FileSource.readFrom(path.join('blueprints', 'template1'), new IdentityCompiler())
       .map(entry => Promise.resolve(entry.transform({})).then(e => sink.write(e)))
       .toArray()
       .toPromise()

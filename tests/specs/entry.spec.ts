@@ -1,5 +1,5 @@
-import {IdentityCompiler} from '../src/utils/compilers';
-import {CompilableEntry, MoveEntry, TransformEntry, StaticEntry} from '../src/api/entry';
+import {IdentityCompiler} from '../../src/utils/compilers';
+import {CompilableEntry, MoveEntry, TransformEntry, StaticEntry} from '../../src/api/entry';
 
 
 describe('CompilableEntry', () => {

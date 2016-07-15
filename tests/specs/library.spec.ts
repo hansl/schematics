@@ -1,15 +1,14 @@
 import 'reflect-metadata';
-
-import {Injectable, ReflectiveInjector} from '@angular/core';
+import {Injectable, Provider, ReflectiveInjector} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
 
-import {Schematic} from '../src/api/schematics';
-import {Compiler} from '../src/api/compiler';
-import {Library} from '../src/library/library';
-import {IdentityCompiler} from '../src/utils/compilers';
-import {MemorySink, MemorySource, MEMORY_SOURCE_MAP_TOKEN} from '../src/utils/memory';
-import {Source} from '../src/api/source';
-import {Sink} from '../src/api/sink';
+import {Schematic} from '../../src/api/schematics';
+import {Compiler} from '../../src/api/compiler';
+import {Library} from '../../src/library/library';
+import {IdentityCompiler} from '../../src/utils/compilers';
+import {MemorySink, MemorySource, kMemorySourceMapToken} from '../../src/utils/memory';
+import {Source} from '../../src/api/source';
+import {Sink} from '../../src/api/sink';
 
 
 class EmptySchematic extends Schematic {
@@ -27,6 +26,9 @@ describe('Library', () => {
 
     const s = library.create('empty');
     expect(s instanceof Schematic).toBe(true);
+
+    const s2 = library.create('empty', {});
+    expect(s2 instanceof Schematic).toBe(true);
   });
 
   it('can perform the whole DI flow', (done) => {
@@ -44,7 +46,7 @@ describe('Library', () => {
     }
 
     library.addProviders([
-      { provide: MEMORY_SOURCE_MAP_TOKEN, useValue: ({
+      { provide: kMemorySourceMapToken, useValue: ({
         'file': 'hello world',
         'dir/file2': 'woot'
       }) },
@@ -110,8 +112,65 @@ describe('Library', () => {
   it('will throw on error', () => {
     const library = new Library(new IdentityCompiler());
 
+    class OtherSchematic extends EmptySchematic {}
+
     library.register('empty', EmptySchematic);
-    expect(() => library.register('empty', EmptySchematic)).toThrow();
+    expect(() => library.register('empty', EmptySchematic)).not.toThrow();
+    expect(() => library.register('empty', OtherSchematic)).toThrow();
     expect(() => library.create('unknown')).toThrow();
+  });
+
+  it('can unregister schematics', () => {
+    const library = new Library(new IdentityCompiler());
+
+    class OtherSchematic extends EmptySchematic {}
+
+    library.register('test', EmptySchematic);
+    library.register('test2', OtherSchematic);
+    library.register('empty', EmptySchematic);
+
+    expect(() => library.create('empty')).not.toThrow();
+    expect(() => library.create('test')).not.toThrow();
+    library.unregister(EmptySchematic);
+    expect(() => library.create('empty')).toThrow();
+    expect(() => library.create('test')).toThrow();
+    expect(() => library.create('test2')).not.toThrow();
+    library.register('empty', OtherSchematic);
+    expect(() => library.create('empty')).not.toThrow();
+    library.unregister('empty');
+    expect(() => library.create('empty')).toThrow();
+    library.unregister('empty');
+    expect(() => library.create('empty')).toThrow();
+  });
+
+  it('can remove and add providers', () => {
+    const library = new Library(new IdentityCompiler());
+    let called = 0;
+
+    class Type {
+      constructor() { called++; }
+    }
+    const token = Symbol();
+
+    library.addProviders([Type]);
+    library.get(Type);
+    expect(called).toBe(1);
+    library.removeProvider(Type);
+    expect(() => library.get(Type)).toThrow();
+    expect(called).toBe(1);
+
+    library.addProviders([new Provider('hello', { useClass: Type })]);
+    library.get('hello');
+    expect(called).toBe(2);
+    library.removeProvider('hello');
+    expect(() => library.get('hello')).toThrow();
+    expect(called).toBe(2);
+
+    library.addProviders([{ provide: 'hello', useClass: Type }]);
+    library.get('hello');
+    expect(called).toBe(3);
+    library.removeProvider('hello');
+    expect(() => library.get('hello')).toThrow();
+    expect(called).toBe(3);
   });
 });

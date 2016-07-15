@@ -91,7 +91,7 @@ export class FileSource implements Source {
     return this._loadFrom(this._path, '');
   }
 
-  static loadFrom(p: string, compiler: Compiler): Observable<Entry> {
+  static readFrom(p: string, compiler: Compiler): Observable<Entry> {
     return (new this(p, compiler)).read();
   }
 

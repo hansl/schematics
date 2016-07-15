@@ -1,11 +1,11 @@
 import * as path from 'path';
 import {Observable} from 'rxjs/Observable';
 
-import {Entry, CompilableEntry} from '../src/api/entry';
-import {Schematic, Variable} from '../src/api/schematics';
-import {SimpleSink} from '../src/api/sink';
-import {IdentityCompiler} from '../src/utils/compilers';
-import {MemorySource, MemorySink} from '../src/utils/memory';
+import {Entry, CompilableEntry} from '../../src/api/entry';
+import {Schematic, Variable} from '../../src/api/schematics';
+import {SimpleSink} from '../../src/api/sink';
+import {IdentityCompiler} from '../../src/utils/compilers';
+import {MemorySource, MemorySink} from '../../src/utils/memory';
 
 import 'rxjs/add/observable/empty';
 import 'rxjs/add/observable/of';

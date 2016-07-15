@@ -13,11 +13,11 @@ import {Inject} from '@angular/core';
 
 export type MemorySourceFn = (p: string, s: MemorySource) => string;
 export type MemorySourceMap = {[path: string]: MemorySourceMap | MemorySourceFn | string};
-export const MEMORY_SOURCE_MAP_TOKEN = Symbol();
+export const kMemorySourceMapToken = Symbol();
 
 
 export class MemorySource extends Source {
-  constructor(@Inject(MEMORY_SOURCE_MAP_TOKEN) private _map: MemorySourceMap,
+  constructor(@Inject(kMemorySourceMapToken) private _map: MemorySourceMap,
               @Inject(Compiler) private _compiler: Compiler) {
     super();
   }
