@@ -13,5 +13,9 @@
     "sourceMap": true,
     "sourceRoot": "",
     "target": "es5"
-  }
+  },
+  "files": [
+    "../node_modules/@types/node/index.d.ts",
+    "index.ts"
+  ]
 }

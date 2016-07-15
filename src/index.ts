@@ -1,9 +1,13 @@
 import 'reflect-metadata';
 
-export {Entry} from './api/entry';
-export {Compiler} from './api/compiler';
-export {Context} from './api/entry';
-export {Schematic, Variable} from './api/schematics';
-export {Source} from './api/source';
+export * from './api/entry';
+export * from './api/compiler';
+export * from './api/entry';
+export * from './api/schematics';
+export * from './api/source';
 
-export {FileSource, FileSink} from './utils/files';
+export * from './library/library';
+
+export * from './utils/compilers';
+export * from './utils/files';
+export * from './utils/memory';

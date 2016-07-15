@@ -4,8 +4,8 @@ import * as path from 'path';
 import {Observable} from 'rxjs/Observable';
 import {ReplaySubject} from 'rxjs/ReplaySubject';
 
-import {Compiler, CompiledFn} from '../api/compiler';
-import {Entry, Context, CompilableEntry} from '../api/entry';
+import {Compiler} from '../api/compiler';
+import {Entry, CompilableEntry} from '../api/entry';
 import {SimpleSink} from '../api/sink';
 import {Source} from '../api/source';
 import {BaseException} from '../core/exception';
