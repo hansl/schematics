@@ -25,7 +25,7 @@ describe('CompilableEntry', () => {
     expect(e1.content).not.toBe(null);
     e1.template = null;
     expect(e1.content).toBe(null);
-  })
+  });
 });
 
 

@@ -12,7 +12,7 @@ export class LodashTemplateCompiler extends Compiler {
     const compiledFn = template(entry.content);
     return (context: Context) => {
       return new StaticEntry(entry.path, entry.name, compiledFn(context));
-    }
+    };
   }
 }
 
@@ -60,7 +60,7 @@ export class MergeCompiler extends Compiler {
           .then(e => compiler.compile(e))
           .then(fn => fn(context));
         }, Promise.resolve(entry));
-    }
+    };
   }
 }
 

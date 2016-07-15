@@ -211,7 +211,7 @@ describe('FileSink', () => {
     sink.init();
 
     FileSource.loadFrom(path.join('blueprints', 'template1'), compiler)
-      .map(entry => Promise.resolve(entry.transform({})).then(entry => sink.write(entry)))
+      .map(entry => Promise.resolve(entry.transform({})).then(e => sink.write(e)))
       .toArray()
       .toPromise()
       .then(all => Promise.all(all))
@@ -228,7 +228,7 @@ describe('FileSink', () => {
     sink.init();
 
     FileSource.loadFrom(path.join('blueprints', 'template1'), new IdentityCompiler())
-      .map(entry => Promise.resolve(entry.transform({})).then(entry => sink.write(entry)))
+      .map(entry => Promise.resolve(entry.transform({})).then(e => sink.write(e)))
       .toArray()
       .toPromise()
       .then(all => Promise.all(all))

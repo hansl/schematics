@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p src",
+    "ci": "npm run lint && npm run test:ci",
+    "lint": "tslint -c .tslint.json 'src/**/*.ts' 'tests/**/*.ts'",
     "test": "npm run build && ./scripts/run-spec.js",
     "test:build": "tsc -p tests",
     "test:ci": "npm run test:build && npm run test:coverage",
@@ -36,6 +38,7 @@
     "jasmine-spec-reporter": "^2.5.0",
     "mock-fs": "^3.9.0",
     "remap-istanbul": "^0.6.4",
-    "ts-node": "^0.9.1"
+    "ts-node": "^0.9.1",
+    "tslint": "^3.13.0"
   }
 }

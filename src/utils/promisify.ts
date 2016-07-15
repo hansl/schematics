@@ -15,5 +15,5 @@ export function promisify(fn: (...args: any[]) => any): (...args: any[]) => Prom
         }
       }));
     });
-  }
+  };
 }

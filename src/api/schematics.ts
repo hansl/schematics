@@ -17,7 +17,7 @@ export function Variable(): PropertyDecorator {
       Object.getPrototypeOf(target).__variables = Object.create(null);
     }
     Object.getPrototypeOf(target).__variables[propertyKey] =
-        Reflect.getMetadata("design:type", target, propertyKey);
+        Reflect.getMetadata('design:type', target, propertyKey);
   };
 }
 
@@ -25,7 +25,7 @@ export function Variable(): PropertyDecorator {
 export abstract class Schematic {
   abstract build(): Observable<Entry>;
 
-  private readonly __variables: { [name: string]: Type };
+  private readonly _$variables: { [name: string]: Type };
 
   private _beforeInstallSubject: Subject<void> = new Subject<void>();
   private _afterInstallSubject: Subject<void> = new Subject<void>();
@@ -45,9 +45,9 @@ export abstract class Schematic {
     // Collect all the variables from all the parent prototypes.
     let names: { [name: string]: Type } = Object.create(null);
     for (let proto = this; proto; proto = Object.getPrototypeOf(proto)) {
-      if (proto.__variables) {
-        for (const key of Object.keys(proto.__variables)) {
-          names[key] = names[key] || proto.__variables[key];
+      if (proto._$variables) {
+        for (const key of Object.keys(proto._$variables)) {
+          names[key] = names[key] || proto._$variables[key];
         }
       }
     }
@@ -84,7 +84,7 @@ export abstract class Schematic {
               .then(() => sink.write(transformedEntry))
               .then(() => {
                 this._afterWriteEntrySubject.next(transformedEntry);
-              })
+              });
           });
       })
       .toArray()

@@ -42,16 +42,16 @@ export class FileSource implements Source {
 
   private _loadFrom(root: string, p: string): Observable<Entry> {
     const fullPath = path.join(root, p);
-    let stat: fs.Stats = null;
+    let stats: fs.Stats = null;
 
     try {
       fs.accessSync(fullPath, fs.R_OK);
-      stat = fs.statSync(fullPath);
+      stats = fs.statSync(fullPath);
     } catch (e) {
       return Observable.throw(new FileSystemException(e));
     }
 
-    if (!stat.isDirectory()) {
+    if (!stats.isDirectory()) {
       return Observable.fromPromise(FileSource.createEntry(fullPath, p, this._compiler));
     }
 
@@ -73,10 +73,10 @@ export class FileSource implements Source {
 
   read(): Observable<Entry> {
     // We need to verify once if it's a file that we're importing.
-    let stat: fs.Stats;
+    let stats: fs.Stats;
     try {
       fs.accessSync(this._path, fs.R_OK);
-      stat = fs.statSync(this._path);
+      stats = fs.statSync(this._path);
     } catch (err) {
       if (err.code == 'ENOENT') {
         return Observable.empty();
@@ -84,7 +84,7 @@ export class FileSource implements Source {
         return Observable.throw(new FileSystemException(err));
       }
     }
-    if (!stat.isDirectory()) {
+    if (!stats.isDirectory()) {
       return Observable.throw(new SourceRootMustBeDirectoryException());
     }
 

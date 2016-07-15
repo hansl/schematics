@@ -19,10 +19,6 @@ class EmptySchematic extends Schematic {
 }
 
 class ErrorSink extends SimpleSink {
-  constructor(private _nb: number = 0) {
-    super();
-  }
-
   write(entry: Entry): Promise<void> {
     return Promise.reject(new Error('reason'));
   }
