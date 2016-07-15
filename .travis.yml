@@ -5,7 +5,6 @@ env:
     - NODE_VERSION=5 SCRIPT=test:ci
 os:
   - linux
-  - osx
 matrix:
   exclude:
     - os: osx
