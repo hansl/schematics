@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 export {Entry} from './api/entry';
 export {Compiler} from './api/compiler';
 export {Context} from './api/entry';

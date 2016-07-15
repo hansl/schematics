@@ -1,9 +1,8 @@
-/// <reference path="../../node_modules/@types/jasmine/index.d.ts" />
 import * as path from 'path';
 
-import {StaticEntry} from '../api/entry';
-import {Context, Compiler, Entry} from '../index';
-import {MemorySource} from './memory';
+import {Context, Entry, StaticEntry} from '../src/api/entry';
+import {Compiler} from '../src/api/compiler';
+import {MemorySource} from '../src/utils/memory';
 
 import 'rxjs/add/operator/count';
 import 'rxjs/add/operator/map';

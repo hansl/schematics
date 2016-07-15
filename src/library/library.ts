@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import {Injector, Provider, ReflectiveInjector, Type} from '@angular/core';
 
 import {Schematic} from '../api/schematics';

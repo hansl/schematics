@@ -1,11 +1,10 @@
-import {Type} from '@angular/core';
-import {Observable} from 'rxjs/Observable';
-import {Subject} from 'rxjs/Subject';
-
 import {Entry, Context} from './entry';
 import {Sink} from '../api/sink';
 
 import 'reflect-metadata';
+import {Type} from '@angular/core';
+import {Observable} from 'rxjs/Observable';
+import {Subject} from 'rxjs/Subject';
 import 'rxjs/add/operator/distinct';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toArray';

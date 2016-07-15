@@ -1,16 +1,16 @@
-/// <reference path="../../node_modules/@types/jasmine/index.d.ts" />
-import * as mockFs from 'mock-fs';
-
 import * as glob from 'glob';
+import * as mockFs from 'mock-fs';
 import * as path from 'path';
 
-import {IdentityCompiler} from '../api/compiler';
-import {StaticEntry} from '../api/entry';
-import {Context, Compiler, Entry} from '../index';
+import {Entry, StaticEntry} from '../src/api/entry';
+import {Compiler} from '../src/api/compiler';
+import {IdentityCompiler} from '../src/utils/compilers';
 import {
-  FileSink, FileSource, SourceRootMustBeDirectoryException,
+  FileSink,
+  FileSource,
+  SourceRootMustBeDirectoryException,
   FileSystemException
-} from './files';
+} from '../src/utils/files';
 
 import 'rxjs/add/operator/count';
 import 'rxjs/add/operator/map';
@@ -25,7 +25,7 @@ describe('FileSource', () => {
   const compiler: Compiler = {
     compile: (entry: Entry) => {
       nbCompiled++;
-      return (context: Context) => {
+      return () => {
         nbRendered++;
         return new StaticEntry(entry.path, entry.name, '');
       };

@@ -1,6 +1,3 @@
-import * as path from 'path';
-
-import {Inject} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
 import {ReplaySubject} from 'rxjs/ReplaySubject';
 
@@ -8,6 +5,10 @@ import {Compiler} from '../api/compiler';
 import {Entry, CompilableEntry} from '../api/entry';
 import {Source} from '../api/source';
 import {SimpleSink} from '../api/sink';
+
+import * as path from 'path';
+import 'reflect-metadata';
+import {Inject} from '@angular/core';
 
 
 export type MemorySourceFn = (p: string, s: MemorySource) => string;

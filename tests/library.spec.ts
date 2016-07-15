@@ -1,13 +1,15 @@
-/// <reference path="../../node_modules/@types/jasmine/index.d.ts" />
+import 'reflect-metadata';
+
 import {Injectable, ReflectiveInjector} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
 
-import {Schematic} from '../index';
-import {Library} from './library';
-import {IdentityCompiler, Compiler} from '../api/compiler';
-import {MemorySink, MemorySource, MEMORY_SOURCE_MAP_TOKEN} from '../utils/memory';
-import {Source} from '../api/source';
-import {Sink} from '../api/sink';
+import {Schematic} from '../src/api/schematics';
+import {Compiler} from '../src/api/compiler';
+import {Library} from '../src/library/library';
+import {IdentityCompiler} from '../src/utils/compilers';
+import {MemorySink, MemorySource, MEMORY_SOURCE_MAP_TOKEN} from '../src/utils/memory';
+import {Source} from '../src/api/source';
+import {Sink} from '../src/api/sink';
 
 
 class EmptySchematic extends Schematic {

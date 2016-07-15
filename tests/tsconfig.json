@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "lib": ["es5", "es6", "dom"],
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    "outDir": "../dist/",
+    "rootDirs": [
+      ".",
+      "../src"
+    ],
+    "sourceMap": true,
+    "sourceRoot": "",
+    "target": "es5"
+  },
+  "include": [
+    "../node_modules/@types/jasmine/index.d.ts",
+    "../node_modules/@types/node/index.d.ts",
+    "*.spec.ts"
+  ]
+}

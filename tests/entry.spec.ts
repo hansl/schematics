@@ -1,6 +1,5 @@
-/// <reference path="../../node_modules/@types/jasmine/index.d.ts" />
-import {IdentityCompiler} from './compiler';
-import {CompilableEntry, MoveEntry} from './entry';
+import {IdentityCompiler} from '../src/utils/compilers';
+import {CompilableEntry, MoveEntry} from '../src/api/entry';
 
 
 describe('CompilableEntry', () => {
