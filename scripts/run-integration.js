@@ -16,7 +16,4 @@ jasmine.loadConfig({});
 jasmine.addReporter(new JasmineSpecReporter());
 
 // Run the tests.
-const files = glob.sync(path.join(__dirname, '../dist/tests/integration/*.js'));
-files.forEach(() => {
-  jasmine.execute([path.join(projectBaseDir, 'tests/integration/*.js')]);
-});
+jasmine.execute([path.join(projectBaseDir, 'tests/integration/*.integration.js')]);
