@@ -11,3 +11,4 @@ export * from './library/library';
 export * from './utils/compilers';
 export * from './utils/files';
 export * from './utils/memory';
+export * from './utils/observables';

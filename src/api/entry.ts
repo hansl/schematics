@@ -1,4 +1,8 @@
 import {Compiler, CompiledFn} from '../api/compiler';
+import {BaseException} from '../core/exception';
+
+
+export class CannotConcatEntriesException extends BaseException {}
 
 
 export type Context = { [name: string]: any };
@@ -85,5 +89,23 @@ export class TransformEntry implements Entry {
     return Promise.resolve()
       .then(() => this._entry.transform(context))
       .then(newEntry => this._transformer(newEntry, context));
+  }
+}
+
+
+export class ConcatEntry implements Entry {
+  constructor(private _e1: Entry, private _e2: Entry) {
+    if (_e1.path !== _e2.path || _e1.name !== _e2.name) {
+      throw new CannotConcatEntriesException();
+    }
+  }
+
+  get name() { return this._e1.name; }
+  get path() { return this._e1.path; }
+  get content() { return this._e1.content + this._e2.content; }
+
+  transform(context: Context): Promise<Entry> {
+    return Promise.all([this._e1.transform(context), this._e2.transform(context)])
+      .then(([e1, e2]) => new ConcatEntry(e1, e2));
   }
 }

@@ -150,7 +150,6 @@ describe('Library', () => {
     class Type {
       constructor() { called++; }
     }
-    const token = Symbol();
 
     library.addProviders([Type]);
     library.get(Type);

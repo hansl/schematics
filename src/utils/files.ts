@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import {Inject, Injectable, Optional} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
 import {ReplaySubject} from 'rxjs/ReplaySubject';
 
@@ -37,8 +38,14 @@ export class FileSystemException extends BaseException {
 export class SourceRootMustBeDirectoryException extends BaseException {}
 
 
+@Injectable()
 export class FileSource implements Source {
-  constructor(private _path: string, private _compiler: Compiler) {}
+  private _path: string;
+
+  constructor(@Optional() path: string,
+              @Inject(Compiler) private _compiler: Compiler) {
+    this._path = path || '/';
+  }
 
   private _loadFrom(root: string, p: string): Observable<Entry> {
     const fullPath = path.join(root, p);
@@ -89,6 +96,10 @@ export class FileSource implements Source {
     }
 
     return this._loadFrom(this._path, '');
+  }
+
+  readFrom(p: string): Observable<Entry> {
+    return (new FileSource(path.join(this._path, p), this._compiler)).read();
   }
 
   static readFrom(p: string, compiler: Compiler): Observable<Entry> {

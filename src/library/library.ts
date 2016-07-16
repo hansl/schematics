@@ -61,7 +61,7 @@ export class Library implements Injector {
       } else if (p instanceof Provider && p.token === token) {
         remove = true;
       } else if (typeof p == 'object' && p['provide'] === token) {
-        remove =true;
+        remove = true;
       }
 
       if (remove) {
