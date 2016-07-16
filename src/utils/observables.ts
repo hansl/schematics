@@ -11,7 +11,7 @@ import 'rxjs/add/operator/reduce';
 /**
  * Allows entries in an Observable to concat each other (instead of overwriting).
  */
-export function mergeConcatEntry<T extends Entry>(a: Observable<T>, b: Observable<T>): Observable<T> {
+export function mergeConcatEntry<T extends Entry>(a: Observable<T>, b: Observable<T>) {
   return a.merge(b)
     .groupBy(entry => path.join(entry.path, entry.name))
     .mergeMap(obs => {
