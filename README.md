@@ -108,7 +108,4 @@ Library.global.setContext({
 // argument to pass in a different sink, or a context. The two calls above
 // simply set the defaults for those.
 Library.global.install('Multiple');
-
-// We're going to go a little advanced here...
-sink.
 ```
