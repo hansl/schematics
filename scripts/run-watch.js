@@ -24,23 +24,18 @@ function debounce(fn, wait) {
 }
 
 
-const runTests = debounce(() => {
+const runTests = debounce(function() {
   console.log('Change detected... Running the tests');
 
   try {
-    let output = execSync(`${path.resolve('node_modules/.bin/tsc')} -p tests`);
-    console.log(output.toString());
-
-    output = execSync(path.join(__dirname, 'run-spec.js'));
-    console.log(output.toString());
+    const output = execSync(path.join(__dirname, 'run-spec.js'), { encoding: 'utf-8' });
+    console.log(output);
   } catch (err) {
-    console.error('An error occured:', err.stderr.toString());
   }
-});
+}, 100);
 
 // Run once.
 runTests();
 
 
-fs.watch(path.join(__dirname, '../src'), { recursive: true }, runTests);
-fs.watch(path.join(__dirname, '../tests'), { recursive: true }, runTests);
+fs.watch(path.join(__dirname, '../dist'), { recursive: true }, runTests);
