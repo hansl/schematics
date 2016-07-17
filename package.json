@@ -9,6 +9,7 @@
     "lint": "tslint -c .tslint.json 'src/**/*.ts' 'tests/**/*.ts'",
     "test": "npm run build && ./scripts/run-spec.js",
     "test:build": "tsc -p tests",
+    "test:build-watch": "tsc -p tests -w",
     "test:ci": "npm run test:build && npm run test:coverage",
     "test:coverage": "npm run coverage:test && npm run coverage:remap && npm run coverage:report",
     "test:watch": "./scripts/run-watch.js",

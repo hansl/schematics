@@ -1,7 +1,8 @@
 import {Context, Entry} from '../api/entry';
 
 
-export type CompiledFn = (context: Context) => Promise<Entry> | Entry;
+export type CompiledFnReturn = Promise<Entry> | Entry;
+export type CompiledFn = (context: Context) => CompiledFnReturn;
 
 
 export abstract class Compiler {

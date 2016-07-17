@@ -102,7 +102,7 @@ export class ConcatEntry implements Entry {
 
   get name() { return this._e1.name; }
   get path() { return this._e1.path; }
-  get content() { return this._e1.content + this._e2.content; }
+  get content() { return '' + this._e1.content + this._e2.content; }
 
   transform(context: Context): Promise<Entry> {
     return Promise.all([this._e1.transform(context), this._e2.transform(context)])

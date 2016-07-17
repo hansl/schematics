@@ -1,10 +1,10 @@
-import {Entry, Context} from './entry';
+import {Entry, Context} from '../api/entry';
 import {Sink} from '../api/sink';
+import {EventEmitter} from '../utils/private';
 
 import 'reflect-metadata';
 import {Type} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
-import {Subject} from 'rxjs/Subject';
 import 'rxjs/add/operator/distinct';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toArray';
@@ -27,12 +27,12 @@ export abstract class Schematic {
 
   private readonly _$variables: { [name: string]: Type };
 
-  private _beforeInstallSubject: Subject<void> = new Subject<void>();
-  private _afterInstallSubject: Subject<void> = new Subject<void>();
-  private _beforeWriteEntrySubject: Subject<Entry> = new Subject<Entry>();
-  private _afterWriteEntrySubject: Subject<Entry> = new Subject<Entry>();
-  private _beforeTransformSubject: Subject<Entry> = new Subject<Entry>();
-  private _afterTransformSubject: Subject<Entry> = new Subject<Entry>();
+  private _beforeInstallSubject: EventEmitter<void> = new EventEmitter<void>();
+  private _afterInstallSubject: EventEmitter<void> = new EventEmitter<void>();
+  private _beforeWriteEntrySubject: EventEmitter<Entry> = new EventEmitter<Entry>();
+  private _afterWriteEntrySubject: EventEmitter<Entry> = new EventEmitter<Entry>();
+  private _beforeTransformSubject: EventEmitter<Entry> = new EventEmitter<Entry>();
+  private _afterTransformSubject: EventEmitter<Entry> = new EventEmitter<Entry>();
 
   beforeInstall: Observable<void> = this._beforeInstallSubject.asObservable();
   afterInstall: Observable<void> = this._afterInstallSubject.asObservable();
@@ -65,7 +65,7 @@ export abstract class Schematic {
   install(sink: Sink): Promise<void> {
     sink.init();
 
-    this._beforeInstallSubject.next();
+    this._beforeInstallSubject.emit();
     return this.build()
       .distinct((a, b) => {
         return (a.path == b.path && a.name == b.name);
@@ -73,19 +73,19 @@ export abstract class Schematic {
       .map(entry => {
         return Promise.resolve()
           .then(() => {
-            this._beforeTransformSubject.next(entry);
+            this._beforeTransformSubject.emit(entry);
             return entry.transform(this);
           })
           .then(transformedEntry => {
-            this._afterTransformSubject.next(transformedEntry);
+            this._afterTransformSubject.emit(transformedEntry);
             return transformedEntry;
           })
           .then(transformedEntry => {
-            this._beforeWriteEntrySubject.next(transformedEntry);
+            this._beforeWriteEntrySubject.emit(transformedEntry);
             return Promise.resolve()
               .then(() => sink.write(transformedEntry))
               .then(() => {
-                this._afterWriteEntrySubject.next(transformedEntry);
+                this._afterWriteEntrySubject.emit(transformedEntry);
               });
           });
       })
@@ -93,7 +93,7 @@ export abstract class Schematic {
       .toPromise()
       .then((all) => Promise.all(all))
       .then(() => {
-        this._afterInstallSubject.next();
+        this._afterInstallSubject.emit();
       })
       .then(() => { sink.done(); })
       .catch((err) => sink.error(err));

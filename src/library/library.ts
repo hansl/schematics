@@ -127,7 +127,7 @@ export class Library implements Injector {
   install(name: string, info: {context?: Context, sink?: Sink} = {}): Promise<void> {
     let {context, sink} = info;
     if (sink == null) {
-      sink = this.get(Sink, null);
+      sink = this.get(Sink);
     }
     return this.create(name, context).install(sink);
   }

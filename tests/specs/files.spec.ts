@@ -185,6 +185,9 @@ describe('FileSource', () => {
           expect(true).toBe(false);
         }, (err) => {
           expect(err instanceof FileSystemException).toBe(true);
+          // These can vary from operating system to operating system.
+          // The only constant is the filename will be part of it.
+          expect(err.message).toMatch('blueprints/template2/fileNOACCESS');
         })
         .then(done, done.fail);
 

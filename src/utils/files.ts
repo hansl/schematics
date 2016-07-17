@@ -10,7 +10,7 @@ import {Entry, CompilableEntry} from '../api/entry';
 import {SimpleSink} from '../api/sink';
 import {Source} from '../api/source';
 import {BaseException} from '../core/exception';
-import {promisify} from '../utils/promisify';
+import {promisify} from '../utils/private';
 
 import 'rxjs/add/observable/empty';
 import 'rxjs/add/observable/from';

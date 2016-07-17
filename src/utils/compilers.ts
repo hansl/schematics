@@ -1,6 +1,6 @@
 import {template} from 'lodash';
 
-import {Compiler, CompiledFn} from '../api/compiler';
+import {Compiler, CompiledFn, CompiledFnReturn} from '../api/compiler';
 import {Context, Entry, StaticEntry, MoveEntry} from '../api/entry';
 
 
@@ -81,5 +81,18 @@ export const defaultCompiler = new MergeCompiler(
 export class IdentityCompiler extends Compiler {
   compile(entry: Entry) {
     return () => entry;
+  }
+}
+
+
+/**
+ * A compiler that calls a function for transformation.
+ */
+export class FunctionCompiler extends Compiler {
+  constructor(private _fn: (entry?: Entry, context?: Context) => CompiledFnReturn) {
+    super();
+  }
+  compile(entry: Entry) {
+    return (context: Context) => this._fn(entry, context);
   }
 }

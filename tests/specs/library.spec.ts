@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import {Injectable, Provider, ReflectiveInjector} from '@angular/core';
+import {Injectable, NoProviderError, Provider, ReflectiveInjector} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
 
 import {Schematic} from '../../src/api/schematics';
@@ -99,12 +99,32 @@ describe('Library', () => {
     library.create('empty');
     library.install('empty')
       .then(() => expect(sink.files).toEqual({}))
-      .then(() => library.install('simple', sink))
+      .then(() => library.install('simple', { sink }))
       .then(() => {
         expect(sink.files).toEqual({
           'file': 'hello world',
           'dir/file2': 'woot'
         });
+      })
+      .then(() => {
+        expect(library.parentInjector).toBe(parentInjector);
+
+        // Delete library's parent injector.
+        library.parentInjector = null;
+        expect(library.parentInjector).toBe(null);
+        // This should fail because the Compiler isn't optional.
+        return library.install('empty');
+      })
+      .then(() => {
+        expect(false).toBe(true);
+      }, (err) => {
+        expect(err instanceof NoProviderError).toBe(true);
+      })
+      .then(() => {
+        // Reinstate the same library's parent injector, this should now work
+        // as expected.
+        library.parentInjector = parentInjector;
+        return library.install('empty');
       })
       .then(done, done.fail);
   });
