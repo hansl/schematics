@@ -186,9 +186,6 @@ describe('Schematics', () => {
         expect(beforeWriteEntry).toBe(2);
         expect(afterWriteEntry).toBe(2);
       })
-      .then(done, (err) => {
-        console.log(err.stack);
-        done.fail()
-      });
+      .then(done, done.fail);
   });
 });
