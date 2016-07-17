@@ -130,6 +130,7 @@ export class FileSource implements Source {
 export class FileSink extends SimpleSink {
   constructor(private _root: string = process.cwd()) {
     super();
+    this._root = path.normalize(this._root);
   }
 
   write(entry: Entry): Promise<void> {

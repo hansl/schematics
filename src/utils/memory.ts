@@ -54,7 +54,7 @@ export class MemorySource extends Source {
     return s.asObservable();
   }
 
-  static loadFrom(map: MemorySourceMap, compiler: Compiler): Observable<Entry> {
+  static readFrom(map: MemorySourceMap, compiler: Compiler): Observable<Entry> {
     return new this(map, compiler).read();
   }
 }

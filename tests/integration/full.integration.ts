@@ -36,4 +36,25 @@ describe('Inherited', () => {
       })
       .then(done, done.fail);
   });
+
+  it('supports events', (done) => {
+    let nbInstall = 0;
+    let nbTransform = 0;
+    let nbWrite = 0;
+    Library.global.install('inherited', {
+      beforeInstall: () => { nbInstall++; },
+      afterInstall: () => { nbInstall++; },
+      beforeTransformEntry: () => { nbTransform++; },
+      afterTransformEntry: () => { nbTransform++; },
+      beforeWriteEntry: () => { nbWrite++; },
+      afterWriteEntry: () => { nbWrite++; }
+    })
+      .then(() => {
+        expect(Object.keys(sink.files).sort()).toEqual(['ABCHelloDEF', 'file1', 'file2']);
+        expect(nbInstall).toBe(2);
+        expect(nbTransform).toBe(6);
+        expect(nbWrite).toBe(6);
+      })
+      .then(done, done.fail);
+  });
 });

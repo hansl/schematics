@@ -1,7 +1,7 @@
 import * as path from 'path';
 import {Observable} from 'rxjs/Observable';
 
-import {Entry, CompilableEntry} from '../../src/api/entry';
+import {Entry, CompilableEntry, StaticEntry} from '../../src/api/entry';
 import {Schematic, Variable} from '../../src/api/schematics';
 import {SimpleSink} from '../../src/api/sink';
 import {IdentityCompiler} from '../../src/utils/compilers';
@@ -79,8 +79,8 @@ describe('Schematics', () => {
 
     class MySchematic extends Schematic {
       build() {
-        return MemorySource.loadFrom(template1, compiler)
-          .merge(MemorySource.loadFrom(template2, compiler));
+        return MemorySource.readFrom(template1, compiler)
+          .merge(MemorySource.readFrom(template2, compiler));
       }
     }
 
@@ -114,7 +114,7 @@ describe('Schematics', () => {
 
     class MySchematic extends Schematic {
       build() {
-        return MemorySource.loadFrom(template, compiler);
+        return MemorySource.readFrom(template, compiler);
       }
     }
 
@@ -135,7 +135,7 @@ describe('Schematics', () => {
       .then(done, done.fail);
   });
 
-  it('will reject on error', (done) => {
+  it('will reject on sink error', (done) => {
     const sink = new ErrorSink();
     class MySchematic extends Schematic {
       build() {
@@ -148,6 +148,47 @@ describe('Schematics', () => {
       .then(() => done.fail(), (err) => {
         expect(err.message).toBe('reason');
         done();
+      });
+  });
+
+  it('supports events', (done) => {
+    const sink = new MemorySink();
+    class MySchematic extends Schematic {
+      build() {
+        return Observable.of(
+          new StaticEntry('', 'a', 'hello'),
+          new StaticEntry('', 'b', 'world')
+        );
+      }
+    }
+    const s = new MySchematic();
+    s.transform({});
+
+    let beforeInstall = 0;
+    s.beforeInstall.subscribe(() => { beforeInstall++; });
+    let afterInstall = 0;
+    s.afterInstall.subscribe(() => { afterInstall++; });
+    let beforeTransformEntry = 0;
+    s.beforeTransformEntry.subscribe(() => { beforeTransformEntry++; });
+    let afterTransformEntry = 0;
+    s.afterTransformEntry.subscribe(() => { afterTransformEntry++; });
+    let beforeWriteEntry = 0;
+    s.beforeWriteEntry.subscribe(() => { beforeWriteEntry++; });
+    let afterWriteEntry = 0;
+    s.afterWriteEntry.subscribe(() => { afterWriteEntry++; });
+
+    s.install(sink)
+      .then(() => {
+        expect(beforeInstall).toBe(1);
+        expect(afterInstall).toBe(1);
+        expect(beforeTransformEntry).toBe(2);
+        expect(afterTransformEntry).toBe(2);
+        expect(beforeWriteEntry).toBe(2);
+        expect(afterWriteEntry).toBe(2);
+      })
+      .then(done, (err) => {
+        console.log(err.stack);
+        done.fail()
       });
   });
 });

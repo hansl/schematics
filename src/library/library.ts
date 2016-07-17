@@ -2,11 +2,12 @@ import 'reflect-metadata';
 import {Injector, Provider, ReflectiveInjector, Type} from '@angular/core';
 
 import {Compiler} from '../api/compiler';
-import {Context} from '../api/entry';
+import {Context, Entry} from '../api/entry';
 import {Schematic} from '../api/schematics';
 import {Sink} from '../api/sink';
 import {BaseException} from '../core/exception';
 import {defaultCompiler} from '../utils/compilers';
+import {EventExecutorFn} from '../utils/private';
 
 
 export class SchematicAlreadyRegisteredException extends BaseException {}
@@ -15,6 +16,18 @@ export class SchematicUnknownException extends BaseException {}
 
 export type Providers = Array<Type | Provider | { [k: string]: any; } | any[]>;
 export const kContextToken = Symbol();
+export type SchematicInstallInfo = {
+  context?: Context,
+  sink?: Sink,
+
+  // Events that will be hooked when installing the schematic.
+  beforeInstall?: EventExecutorFn<void>,
+  afterInstall?: EventExecutorFn<void>,
+  beforeWriteEntry?: EventExecutorFn<Entry>,
+  afterWriteEntry?: EventExecutorFn<Entry>,
+  beforeTransformEntry?: EventExecutorFn<Entry>,
+  afterTransformEntry?: EventExecutorFn<Entry>
+};
 
 
 export interface SchematicType<T extends Schematic> {
@@ -124,12 +137,49 @@ export class Library implements Injector {
     return this.get(this._registry[name]).transform(context);
   }
 
-  install(name: string, info: {context?: Context, sink?: Sink} = {}): Promise<void> {
+  install(name: string, info: SchematicInstallInfo = {}): Promise<void> {
     let {context, sink} = info;
     if (sink == null) {
       sink = this.get(Sink);
     }
-    return this.create(name, context).install(sink);
+    const schematic = this.create(name, context);
+
+    // Install events.
+    let beforeInstallObserver = info.beforeInstall &&
+      schematic.beforeInstall.subscribe(info.beforeInstall);
+    let afterInstallObserver = info.afterInstall &&
+      schematic.afterInstall.subscribe(info.afterInstall);
+    let beforeTransformEntryObserver = info.beforeTransformEntry &&
+      schematic.beforeTransformEntry.subscribe(info.beforeTransformEntry);
+    let afterTransformEntryObserver = info.afterTransformEntry &&
+      schematic.afterTransformEntry.subscribe(info.afterTransformEntry);
+    let beforeWriteEntryObserver = info.beforeWriteEntry &&
+      schematic.beforeWriteEntry.subscribe(info.beforeWriteEntry);
+    let afterWriteEntryObserver = info.afterWriteEntry &&
+      schematic.afterWriteEntry.subscribe(info.afterWriteEntry);
+
+    return schematic.install(sink)
+      .then(() => {
+        // Remove events.
+        if (beforeInstallObserver) {
+          beforeInstallObserver.unsubscribe();
+        }
+        if (afterInstallObserver) {
+          afterInstallObserver.unsubscribe();
+        }
+        if (beforeTransformEntryObserver) {
+          beforeTransformEntryObserver.unsubscribe();
+        }
+        if (afterTransformEntryObserver) {
+          afterTransformEntryObserver.unsubscribe();
+        }
+        if (beforeWriteEntryObserver) {
+          beforeWriteEntryObserver.unsubscribe();
+        }
+        if (afterWriteEntryObserver) {
+          afterWriteEntryObserver.unsubscribe();
+        }
+      });
   }
 
   static get global() { return globalLibrary; }

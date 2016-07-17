@@ -1,11 +1,12 @@
 import {Entry, Context} from '../api/entry';
 import {Sink} from '../api/sink';
-import {EventEmitter} from '../utils/private';
+import {EventEmitter, EventEmitterSubject} from '../utils/private';
 
 import 'reflect-metadata';
 import {Type} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
 import 'rxjs/add/operator/distinct';
+import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toArray';
 import 'rxjs/add/operator/toPromise';
@@ -27,19 +28,19 @@ export abstract class Schematic {
 
   private readonly _$variables: { [name: string]: Type };
 
-  private _beforeInstallSubject: EventEmitter<void> = new EventEmitter<void>();
-  private _afterInstallSubject: EventEmitter<void> = new EventEmitter<void>();
-  private _beforeWriteEntrySubject: EventEmitter<Entry> = new EventEmitter<Entry>();
-  private _afterWriteEntrySubject: EventEmitter<Entry> = new EventEmitter<Entry>();
-  private _beforeTransformSubject: EventEmitter<Entry> = new EventEmitter<Entry>();
-  private _afterTransformSubject: EventEmitter<Entry> = new EventEmitter<Entry>();
+  private _beforeInstallSubject: EventEmitterSubject<void> = new EventEmitterSubject<void>();
+  private _afterInstallSubject: EventEmitterSubject<void> = new EventEmitterSubject<void>();
+  private _beforeWriteEntrySubject: EventEmitterSubject<Entry> = new EventEmitterSubject<Entry>();
+  private _afterWriteEntrySubject: EventEmitterSubject<Entry> = new EventEmitterSubject<Entry>();
+  private _beforeTransformSubject: EventEmitterSubject<Entry> = new EventEmitterSubject<Entry>();
+  private _afterTransformSubject: EventEmitterSubject<Entry> = new EventEmitterSubject<Entry>();
 
-  beforeInstall: Observable<void> = this._beforeInstallSubject.asObservable();
-  afterInstall: Observable<void> = this._afterInstallSubject.asObservable();
-  beforeWriteEntry: Observable<Entry> = this._beforeWriteEntrySubject.asObservable();
-  afterWriteEntry: Observable<Entry> = this._afterWriteEntrySubject.asObservable();
-  beforeTransformEntry: Observable<Entry> = this._beforeTransformSubject.asObservable();
-  afterTransformEntry: Observable<Entry> = this._afterTransformSubject.asObservable();
+  beforeInstall: EventEmitter<void> = this._beforeInstallSubject.asEventEmitter();
+  afterInstall: EventEmitter<void> = this._afterInstallSubject.asEventEmitter();
+  beforeWriteEntry: EventEmitter<Entry> = this._beforeWriteEntrySubject.asEventEmitter();
+  afterWriteEntry: EventEmitter<Entry> = this._afterWriteEntrySubject.asEventEmitter();
+  beforeTransformEntry: EventEmitter<Entry> = this._beforeTransformSubject.asEventEmitter();
+  afterTransformEntry: EventEmitter<Entry> = this._afterTransformSubject.asEventEmitter();
 
   transform(context: Context): this {
     // Collect all the variables from all the parent prototypes.
@@ -65,33 +66,27 @@ export abstract class Schematic {
   install(sink: Sink): Promise<void> {
     sink.init();
 
-    this._beforeInstallSubject.emit();
-    return this.build()
-      .distinct((a, b) => {
-        return (a.path == b.path && a.name == b.name);
-      })
-      .map(entry => {
-        return Promise.resolve()
-          .then(() => {
-            this._beforeTransformSubject.emit(entry);
-            return entry.transform(this);
+    return this._beforeInstallSubject.emit().toPromise()
+      .then(() => {
+        return this.build()
+          .filter(x => !!x)  // Remove nulls.
+          .distinct((a, b) => {
+            return (a.path == b.path && a.name == b.name);
           })
-          .then(transformedEntry => {
-            this._afterTransformSubject.emit(transformedEntry);
-            return transformedEntry;
-          })
-          .then(transformedEntry => {
-            this._beforeWriteEntrySubject.emit(transformedEntry);
-            return Promise.resolve()
-              .then(() => sink.write(transformedEntry))
-              .then(() => {
-                this._afterWriteEntrySubject.emit(transformedEntry);
+          .map(entry => {
+            return this._beforeTransformSubject.emit(entry).toPromise()
+              .then(() => entry.transform(this))
+              .then(transformedEntry => {
+                return this._afterTransformSubject.emit(transformedEntry).toPromise()
+                  .then(() => this._beforeWriteEntrySubject.emit(transformedEntry).toPromise())
+                  .then(() => sink.write(transformedEntry))
+                  .then(() => this._afterWriteEntrySubject.emit(transformedEntry).toPromise());
               });
-          });
+          })
+          .toArray()
+          .toPromise()
+          .then((all) => Promise.all(all));
       })
-      .toArray()
-      .toPromise()
-      .then((all) => Promise.all(all))
       .then(() => {
         this._afterInstallSubject.emit();
       })

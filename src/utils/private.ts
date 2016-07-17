@@ -22,7 +22,15 @@ export class EventObserver<T> {
 }
 
 
-export class EventEmitter<T> {
+export interface EventEmitter<T> {
+  subscribe(fn: EventExecutorFn<T>): EventObserver<T>;
+  unsubscribe(ob: EventObserver<T>): void;
+  asObservable(): Observable<T>;
+  asEventEmitter(): EventEmitter<T>;
+}
+
+
+export class EventEmitterSubject<T> implements EventEmitter<T> {
   private observers: Array<EventObserver<T>> = [];
   private subject: Subject<T> = new Subject<T>();
 
@@ -81,6 +89,10 @@ export class EventEmitter<T> {
       s.complete();
     }
     return s.asObservable();
+  }
+
+  asEventEmitter(): EventEmitter<T> {
+    return this;
   }
 
   asObservable(): Observable<T> {

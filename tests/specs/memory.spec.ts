@@ -115,7 +115,7 @@ describe('MemorySource', () => {
 
   it('will propagate errors', (done) => {
     const err = new Error('hello world');
-    MemorySource.loadFrom({ 'file1': () => { throw err; } }, compiler)
+    MemorySource.readFrom({ 'file1': () => { throw err; } }, compiler)
       .toPromise()
       .then(() => done.fail(), (e) => {
         expect(e).toBe(err);

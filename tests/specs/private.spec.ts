@@ -1,10 +1,10 @@
-import {EventEmitter} from '../../src/utils/private';
+import {EventEmitterSubject} from '../../src/utils/private';
 import {Subject} from 'rxjs/Subject';
 
 
-describe('EventEmitter', () => {
+describe('EventEmitterSubject', () => {
   it('Synchronous: works as a subject', (done) => {
-    const s = new EventEmitter<number>();
+    const s = new EventEmitterSubject<number>();
 
     let last: number = undefined;
     s.subscribe((x) => {
@@ -14,7 +14,7 @@ describe('EventEmitter', () => {
     let called = false;
     s.subscribe((): any => {
       called = true;
-      // This should be next() by EventEmitter in its observable.
+      // This should be next() by EventEmitterSubject in its observable.
       return 'hello';
     });
 
@@ -31,7 +31,7 @@ describe('EventEmitter', () => {
   });
 
   it('Synchronous: handle errors', (done) => {
-    const s = new EventEmitter<void>();
+    const s = new EventEmitterSubject<void>();
 
     s.subscribe(() => {
       throw new Error('blah');
@@ -56,7 +56,7 @@ describe('EventEmitter', () => {
   });
 
   it('Synchronous: has no last value', (done) => {
-    const s = new EventEmitter<number>();
+    const s = new EventEmitterSubject<number>();
 
     let last: number = undefined;
     s.subscribe((x) => {
@@ -78,7 +78,7 @@ describe('EventEmitter', () => {
   });
 
   it('Asynchronous: handles Promises', (done) => {
-    const s = new EventEmitter<number>();
+    const s = new EventEmitterSubject<number>();
 
     let last: number = undefined;
     s.subscribe((x) => {
@@ -107,7 +107,7 @@ describe('EventEmitter', () => {
   });
 
   it('Asynchronous: handles Promise errors', (done) => {
-    const s = new EventEmitter<void>();
+    const s = new EventEmitterSubject<void>();
 
     s.subscribe((x) => {
       return new Promise((_, reject) => setTimeout(() => {
@@ -134,7 +134,7 @@ describe('EventEmitter', () => {
   });
 
   it('Asynchronous: handles Observables', (done) => {
-    const s = new EventEmitter<number>();
+    const s = new EventEmitterSubject<number>();
 
     let last: number = undefined;
     s.subscribe((x) => {
@@ -180,7 +180,7 @@ describe('EventEmitter', () => {
   });
 
   it('Asynchronous: handles Observable errors', (done) => {
-    const s = new EventEmitter<void>();
+    const s = new EventEmitterSubject<void>();
 
     s.subscribe((x) => {
       const s2 = new Subject<string>();
@@ -214,7 +214,7 @@ describe('EventEmitter', () => {
   });
 
   it('can unsubscribe', (done) => {
-    const s = new EventEmitter<void>();
+    const s = new EventEmitterSubject<void>();
 
     let called = 0;
     const ob1 = s.subscribe(() => {
@@ -238,5 +238,17 @@ describe('EventEmitter', () => {
       .toPromise()
       .then(x => expect(x).toBe(0))
       .then(done, done.fail);
+  });
+
+  it('Asynchronous: can be gotten as an observable', () => {
+    const s = new EventEmitterSubject<number>();
+    const o = s.asObservable();
+
+    let last: number = undefined;
+    o.subscribe((x) => { last = x; });
+
+    s.emit(2);
+    // Observers are async.
+    expect(last).toBe(2);
   });
 });
