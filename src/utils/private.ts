@@ -61,8 +61,7 @@ export class EventEmitter<T> {
             (err: any) => s.error(err),
             () => unlock()
           );
-        }
-        else if (typeof ret['then'] == 'function') {
+        } else if (typeof ret['then'] == 'function') {
           locks++;
           ret.then((v: any) => {
             s.next(v);

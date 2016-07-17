@@ -71,7 +71,7 @@ describe('TransformEntry', () => {
       .then(() => e2.transform({}))
       .then(e3 => {
         expect(e2.content).toBe('abc');
-        expect(e3.content).toBe('hello')
+        expect(e3.content).toBe('hello');
       })
       .then(done, done.fail);
   });

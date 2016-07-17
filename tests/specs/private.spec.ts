@@ -101,7 +101,7 @@ describe('EventEmitter', () => {
       .toPromise()
       .then(x => {
         expect(last).toBe(2);
-        expect(x).toBe(1)
+        expect(x).toBe(1);
       })
       .then(done, done.fail);
   });
@@ -139,23 +139,23 @@ describe('EventEmitter', () => {
     let last: number = undefined;
     s.subscribe((x) => {
       last = x;
-      const s = new Subject<string>();
+      const s2 = new Subject<string>();
       setTimeout(function() {
-        s.next('hello');
+        s2.next('hello');
         setTimeout(function() {
-          s.complete();
+          s2.complete();
         }, 1);
       }, 1);
-      return s.asObservable();
+      return s2.asObservable();
     });
     s.subscribe((x) => {
       last = x;
-      const s = new Subject<string>();
+      const s3 = new Subject<string>();
       setTimeout(function() {
-        s.next('world');
-        s.complete();
+        s3.next('world');
+        s3.complete();
       }, 1);
-      return s.asObservable();
+      return s3.asObservable();
     });
 
     let called = 0;
@@ -183,15 +183,15 @@ describe('EventEmitter', () => {
     const s = new EventEmitter<void>();
 
     s.subscribe((x) => {
-      const s = new Subject<string>();
+      const s2 = new Subject<string>();
       setTimeout(function() {
-        s.next('hello');
+        s2.next('hello');
         setTimeout(function() {
-          s.next('world');
-          s.error(new Error('2'))
+          s2.next('world');
+          s2.error(new Error('2'));
         }, 1);
       }, 1);
-      return s.asObservable();
+      return s2.asObservable();
     });
 
     let called = 0;
