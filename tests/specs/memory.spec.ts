@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import {Context, Entry, StaticEntry} from '../../src/api/entry';
+import {Entry, StaticEntry} from '../../src/api/entry';
 import {Compiler} from '../../src/api/compiler';
 import {MemorySource} from '../../src/utils/memory';
 
@@ -12,20 +12,15 @@ import 'rxjs/add/operator/toPromise';
 
 describe('MemorySource', () => {
   let nbCompiled = 0;
-  let nbRendered = 0;
 
   const compiler: Compiler = {
     compile: (entry: Entry) => {
       nbCompiled++;
-      return (context: Context) => {
-        nbRendered++;
-        return new StaticEntry(entry.path, entry.name, '');
-      };
+      return new StaticEntry(entry.path, entry.name, '');
     }
   };
 
   beforeEach(() => { nbCompiled = 0; });
-  beforeEach(() => { nbRendered = 0; });
 
   it('can load files', (done: any) => {
     const ms = new MemorySource({
@@ -39,7 +34,7 @@ describe('MemorySource', () => {
       .toPromise()
       .then(nb => {
         expect(nb).toBe(2);
-        expect(nbCompiled).toBe(nb);
+        expect(nbCompiled).toBe(0);
       })
       .then(done, done.fail);
   });
@@ -59,7 +54,7 @@ describe('MemorySource', () => {
       .then(all => Promise.all(all))
       .then(allCompiledText => {
         allCompiledText.forEach(entry => expect(entry.content).toBe(''));
-        expect(nbRendered).toBe(nbCompiled);
+        expect(nbCompiled).toBe(2);
       })
       .then(done, done.fail);
   });

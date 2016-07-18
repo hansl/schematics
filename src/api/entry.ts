@@ -1,4 +1,4 @@
-import {Compiler, CompiledFn} from '../api/compiler';
+import {Compiler, CompileResult} from '../api/compiler';
 import {BaseException} from '../core/exception';
 
 
@@ -24,7 +24,6 @@ export interface Entry {
 export class CompilableEntry implements Entry {
   private _path: string;
   private _template: string = null;
-  private _compiled: Promise<CompiledFn> | CompiledFn;
 
   get name(): string { return this._name; }
   get path(): string { return this._path; }
@@ -39,17 +38,10 @@ export class CompilableEntry implements Entry {
   }
   set template(v: string) {
     this._template = v;
-    if (v !== null) {
-      this._compiled = this._compiler.compile(this);
-    } else {
-      this._compiled = null;
-    }
   }
 
-  transform(context?: Context): Promise<Entry> {
-    return Promise.resolve()
-      .then(() => this._compiled)
-      .then(compiler => compiler ? compiler(context || {}) : null);
+  transform(context?: Context): CompileResult {
+    return this._compiler.compile(this, context || {});
   }
 }
 
