@@ -1,3 +1,4 @@
+import * as path from 'path';
 import {template} from 'lodash';
 
 import {Compiler, CompileResult} from '../api/compiler';
@@ -38,6 +39,26 @@ export class PathChangeCompiler extends Compiler {
 
 
 /**
+ * Remove entries that match certain criterias. By default remove entries that are dotfiles.
+ */
+export class FilterCompiler extends Compiler {
+  // Need at least 2 characters.
+  constructor(private _pathMatch = /^\.[^.]|^\.\.[^.]/, private _fileMatch = /^\.[^.]/) {
+    super();
+  }
+
+  compile(entry: Entry) {
+    if (this._fileMatch.test(entry.name) ||
+        entry.path.split(path.sep).some(x => this._pathMatch.test(x))) {
+      return null;
+    } else {
+      return entry;
+    }
+  }
+}
+
+
+/**
  * A compiler that supports merging multiple compilers together, running them in order they were
  * passed in.
  */
@@ -53,7 +74,7 @@ export class MergeCompiler extends Compiler {
     // returning a promise or a value.
     return this._compilers.reduce((prev, compiler) => {
       return prev
-        .then(e => compiler.compile(e, context));
+        .then(e => e && compiler.compile(e, context));
       }, Promise.resolve(entry));
   }
 }

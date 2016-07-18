@@ -77,10 +77,15 @@ export abstract class Schematic {
             return this._beforeTransformSubject.emit(entry).toPromise()
               .then(() => entry.transform(this))
               .then(transformedEntry => {
+                if (transformedEntry === null) {
+                  return this._afterTransformSubject.emit(transformedEntry).toPromise();
+                }
+
                 return this._afterTransformSubject.emit(transformedEntry).toPromise()
                   .then(() => this._beforeWriteEntrySubject.emit(transformedEntry).toPromise())
                   .then(() => sink.write(transformedEntry))
-                  .then(() => this._afterWriteEntrySubject.emit(transformedEntry).toPromise());
+                  .then(() => this._afterWriteEntrySubject.emit(transformedEntry).toPromise())
+                  .then(() => transformedEntry);
               });
           })
           .toArray()

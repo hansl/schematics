@@ -89,6 +89,10 @@ export class Library implements Injector {
     this.removeProvider(kContextToken);
     this.addProviders([{ provide: kContextToken, useValue: context }]);
   }
+  setCompiler(compiler: Compiler) {
+    this.removeProvider(Compiler);
+    this.addProviders([{ provide: Compiler, useValue: compiler }]);
+  }
   setSink(sink: Sink) {
     this.removeProvider(Sink);
     this.addProviders([{ provide: Sink, useValue: sink }]);

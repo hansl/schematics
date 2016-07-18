@@ -1,8 +1,12 @@
 // Full specs running the equivalent of a real project integration.
 import {
   FileSource,
+  FilterCompiler,
   Library,
-  MemorySink
+  LodashTemplateCompiler,
+  MemorySink,
+  MergeCompiler,
+  PathChangeCompiler
 } from '../../src/index';
 
 
@@ -12,6 +16,12 @@ import './inherited';
 
 const sink = new MemorySink();
 Library.global.addProviders([FileSource]);
+// Set a compiler that removes dotfiles by default.
+Library.global.setCompiler(new MergeCompiler(
+  new PathChangeCompiler(),
+  new FilterCompiler(),
+  new LodashTemplateCompiler()
+));
 Library.global.setContext({ nb: 1 });
 Library.global.setSink(sink);
 
@@ -51,8 +61,10 @@ describe('Inherited', () => {
     })
       .then(() => {
         expect(Object.keys(sink.files).sort()).toEqual(['ABCHelloDEF', 'file1', 'file2']);
+        // There should be 2 install events, 10 files transform events, but 2 entries ignored
+        // so 6 actual write events.
         expect(nbInstall).toBe(2);
-        expect(nbTransform).toBe(6);
+        expect(nbTransform).toBe(10);
         expect(nbWrite).toBe(6);
       })
       .then(done, done.fail);

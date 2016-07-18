@@ -4,7 +4,7 @@ import {Observable} from 'rxjs/Observable';
 import {Entry, CompilableEntry, StaticEntry} from '../../src/api/entry';
 import {Schematic, Variable} from '../../src/api/schematics';
 import {SimpleSink} from '../../src/api/sink';
-import {IdentityCompiler} from '../../src/utils/compilers';
+import {IdentityCompiler, FunctionCompiler} from '../../src/utils/compilers';
 import {MemorySource, MemorySink} from '../../src/utils/memory';
 
 import 'rxjs/add/observable/empty';
@@ -124,6 +124,48 @@ describe('Schematics', () => {
     const expected = [
       path.join('file1'),
       path.join('dir', 'file2')
+    ];
+
+    s.transform({});
+    s.install(sink)
+      .then(() => {
+        const actual = sink.files;
+        expect(Object.keys(actual).sort()).toEqual(expected.sort());
+      })
+      .then(done, done.fail);
+  });
+
+  it('will ignore null entries', (done) => {
+    const template = {
+      'file1': 'some content.',
+      'dir': {
+        'file2': 'will be null',
+        'file3': 'some other content.',
+        'file4': 'will be null',
+        'file5': 'some other content.'
+      }
+    };
+    let i = 0;
+    const compiler = new FunctionCompiler((e: Entry) => {
+      if (i++ % 2) {
+        return null;
+      }
+      return e;
+    });
+
+    class MySchematic extends Schematic {
+      build() {
+        return MemorySource.readFrom(template, compiler);
+      }
+    }
+
+    const s = new MySchematic();
+
+    const sink = new MemorySink();
+    const expected = [
+      path.join('file1'),
+      path.join('dir', 'file3'),
+      path.join('dir', 'file5')
     ];
 
     s.transform({});

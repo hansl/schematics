@@ -1,4 +1,5 @@
 import {
+  FilterCompiler,
   LodashTemplateCompiler,
   PathChangeCompiler,
   defaultCompiler
@@ -66,6 +67,55 @@ describe('PathChangeCompiler', () => {
       .then(() => {
         expect(sink.files['path/world/file']).toBe('hello <%- name %>.');
         expect(sink.files['path/__name__/file']).toBe('hello too.');
+      })
+      .then(done, done.fail);
+  });
+});
+
+
+describe('FilterCompiler', () => {
+  it('works', (done) => {
+    const compiler = new FilterCompiler();
+    const ms = new MemorySource({
+      'path/.a/file': 'hello.',
+      './file': 'blue',
+      './.file': 'red'
+    }, compiler);
+    const sink = new MemorySink();
+
+    class MySchematics extends Schematic {
+      build() { return ms.read(); }
+    }
+
+    new MySchematics()
+      .install(sink)
+      .then(() => {
+        const expected = ['file'];
+        expect(Object.keys(sink.files).sort()).toEqual(expected);
+      })
+      .then(done, done.fail);
+  });
+
+  it('can have a custom matcher', (done) => {
+    const compiler = new FilterCompiler(/IGNORE/, /IGNORE$/);
+    const ms = new MemorySource({
+      'path/aIGNOREb/file': 'hello.',
+      './file': 'blue',
+      './IGNOREfile': 'yellow',
+      './fileIGNORE': 'orange',
+      './.file': 'red'
+    }, compiler);
+    const sink = new MemorySink();
+
+    class MySchematics extends Schematic {
+      build() { return ms.read(); }
+    }
+
+    new MySchematics()
+      .install(sink)
+      .then(() => {
+        const expected = ['file', 'IGNOREfile', '.file'];
+        expect(Object.keys(sink.files).sort()).toEqual(expected.sort());
       })
       .then(done, done.fail);
   });

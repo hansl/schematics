@@ -121,6 +121,36 @@ describe('ConcatEntry', () => {
       .then(done, done.fail);
   });
 
+  it('handles null', (done) => {
+    const staticEntry = new StaticEntry('a', 'b', 'ghi');
+    const compiler = new FunctionCompiler((e: Entry) => staticEntry);
+    const nullCompiler = new FunctionCompiler(() => null);
+
+    const e1 = new CompilableEntry('a', 'b', compiler);
+    e1.template = 'abc';
+    const e2 = new CompilableEntry('a', 'b', compiler);
+    e2.template = 'def';
+    const e3Null = new CompilableEntry('a', 'b', nullCompiler);
+    const e4Null = new CompilableEntry('a', 'b', nullCompiler);
+
+    expect(() => new ConcatEntry(null, e2)).toThrow();
+    expect(() => new ConcatEntry(e1, null)).toThrow();
+    expect(() => new ConcatEntry(null, null)).toThrow();
+
+    const eNull1 = new ConcatEntry(e1, e3Null);
+    const eNull2 = new ConcatEntry(e3Null, e2);
+    const eNull3 = new ConcatEntry(e3Null, e4Null);
+
+    Promise.resolve()
+      .then(() => eNull1.transform({}))
+      .then(e => { expect(e).toBe(staticEntry); })
+      .then(() => eNull2.transform({}))
+      .then(e => { expect(e).toBe(staticEntry); })
+      .then(() => eNull3.transform({}))
+      .then(e => { expect(e).toBe(null); })
+      .then(done, done.fail);
+  });
+
   it('prevents people from creating concats for incompatible entries', () => {
     const e1 = new CompilableEntry('a', 'b', new IdentityCompiler());
     e1.template = 'abc';

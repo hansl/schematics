@@ -87,7 +87,7 @@ export class TransformEntry implements Entry {
 
 export class ConcatEntry implements Entry {
   constructor(private _e1: Entry, private _e2: Entry) {
-    if (_e1.path !== _e2.path || _e1.name !== _e2.name) {
+    if (!_e1 || !_e2 || _e1.path !== _e2.path || _e1.name !== _e2.name) {
       throw new CannotConcatEntriesException();
     }
   }
@@ -98,6 +98,14 @@ export class ConcatEntry implements Entry {
 
   transform(context: Context): Promise<Entry> {
     return Promise.all([this._e1.transform(context), this._e2.transform(context)])
-      .then(([e1, e2]) => new ConcatEntry(e1, e2));
+      .then(([e1, e2]) => {
+        if (!e1) {
+          return e2;
+        } else if (!e2) {
+          return e1;
+        } else {
+          return new ConcatEntry(e1, e2);
+        }
+      });
   }
 }
