@@ -1,16 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as denodeify from 'denodeify';
 
-import {Inject, Injectable, Optional} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
 import {ReplaySubject} from 'rxjs/ReplaySubject';
 
-import {Compiler} from '../api/compiler';
-import {Entry, CompilableEntry} from '../api/entry';
+import {Entry, StaticEntry} from '../api/entry';
 import {SimpleSink} from '../api/sink';
 import {Source} from '../api/source';
 import {BaseException} from '../core/exception';
-import {promisify} from '../utils/private';
 
 import 'rxjs/add/observable/empty';
 import 'rxjs/add/observable/from';
@@ -19,10 +17,10 @@ import 'rxjs/add/observable/throw';
 import ErrnoException = NodeJS.ErrnoException;
 
 
-const readDir = promisify(fs.readdir);
-const readFile = promisify(fs.readFile);
-const stat = promisify(fs.stat);
-const writeFile = promisify(fs.writeFile);
+const readDir = denodeify(fs.readdir);
+const readFile: (...args: any[]) => Promise<string> = denodeify(fs.readFile);
+const stat = denodeify(fs.stat);
+const writeFile: (...args: any[]) => Promise<void> = denodeify(fs.writeFile);
 
 
 export class FileSystemException extends BaseException {
@@ -38,14 +36,8 @@ export class FileSystemException extends BaseException {
 export class SourceRootMustBeDirectoryException extends BaseException {}
 
 
-@Injectable()
 export class FileSource implements Source {
-  private _path: string;
-
-  constructor(@Optional() path: string,
-              @Inject(Compiler) private _compiler: Compiler) {
-    this._path = path || '/';
-  }
+  constructor(private _path: string) {}
 
   private _loadFrom(root: string, p: string): Observable<Entry> {
     const fullPath = path.join(root, p);
@@ -59,7 +51,7 @@ export class FileSource implements Source {
     }
 
     if (!stats.isDirectory()) {
-      return Observable.fromPromise(FileSource.createEntry(fullPath, p, this._compiler));
+      return Observable.fromPromise(FileSource.createEntry(fullPath, p));
     }
 
     const s = new ReplaySubject<Entry>();
@@ -74,7 +66,8 @@ export class FileSource implements Source {
         .catch((err) => {
           s.error(err);
         });
-    });
+    }, err => s.error(new FileSystemException(err)));
+
     return s.asObservable();
   }
 
@@ -99,11 +92,11 @@ export class FileSource implements Source {
   }
 
   readFrom(p: string): Observable<Entry> {
-    return (new FileSource(path.join(this._path, p), this._compiler)).read();
+    return (new FileSource(path.join(this._path, p))).read();
   }
 
-  static readFrom(p: string, compiler: Compiler): Observable<Entry> {
-    return (new this(p, compiler)).read();
+  static readFrom(p: string): Observable<Entry> {
+    return (new this(p)).read();
   }
 
   /**
@@ -113,16 +106,12 @@ export class FileSource implements Source {
    * @param compiler The Compiler to use for the entry.
    * @returns A promise of the entry.
    */
-  static createEntry(fullPath: string, entryPath: string, compiler: Compiler): Promise<Entry> {
+  static createEntry(fullPath: string, entryPath: string): Promise<Entry> {
     return readFile(fullPath, 'utf-8')
-      .then(content => {
-        const entry = new CompilableEntry(path.dirname(entryPath), path.basename(entryPath),
-                                          compiler);
-        entry.template = content;
-        return entry;
-      }, (err) => {
-        throw new FileSystemException(err);
-      });
+      .then((content: any) => {
+        return new StaticEntry(path.dirname(entryPath), path.basename(entryPath), content)
+      })
+      .catch((err) => { throw new FileSystemException(err); });
   }
 }
 

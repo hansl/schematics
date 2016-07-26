@@ -1,12 +1,8 @@
-import {Compiler, CompileResult} from '../api/compiler';
 import {BaseException} from '../core/exception';
 
+import {defaultsDeep} from 'lodash';
 
 export class CannotConcatEntriesException extends BaseException {}
-
-
-export type Context = { [name: string]: any };
-export type TransformerFn = (entry: Entry, context?: Context) => Promise<Entry> | Entry;
 
 
 /**
@@ -16,42 +12,11 @@ export interface Entry {
   readonly name: string;
   readonly path: string;
   readonly content: string;
-
-  transform(context: Context): Promise<Entry> | Entry;
-}
-
-
-export class CompilableEntry implements Entry {
-  private _path: string;
-  private _template: string = null;
-
-  get name(): string { return this._name; }
-  get path(): string { return this._path; }
-  get content(): string { return this._template; }
-
-  constructor(path: string, private _name: string, private _compiler: Compiler) {
-    this._path = path || '/';
-  }
-
-  get template(): string {
-    return this._template;
-  }
-  set template(v: string) {
-    this._template = v;
-  }
-
-  transform(context?: Context): CompileResult {
-    return this._compiler.compile(this, context || {});
-  }
 }
 
 
 export class StaticEntry implements Entry {
   constructor(public path: string, public name: string, public content: string) {}
-
-  transform(context: Context): Promise<Entry> | Entry {
-    return this;
-  }
 }
 
 
@@ -61,27 +26,6 @@ export class MoveEntry implements Entry {
   get name() { return this._name; }
   get path() { return this._path; }
   get content() { return this._entry.content; }
-
-  transform(context: Context) {
-    return Promise.resolve()
-      .then(() => this._entry.transform(context))
-      .then(newE => new MoveEntry(newE, this._path, this._name));
-  }
-}
-
-
-export class TransformEntry implements Entry {
-  constructor(private _entry: Entry, private _transformer: TransformerFn) {}
-
-  get name() { return this._entry.name; }
-  get path() { return this._entry.path; }
-  get content() { return this._entry.content; }
-
-  transform(context: Context): Promise<Entry> {
-    return Promise.resolve()
-      .then(() => this._entry.transform(context))
-      .then(newEntry => this._transformer(newEntry, context));
-  }
 }
 
 
@@ -95,17 +39,24 @@ export class ConcatEntry implements Entry {
   get name() { return this._e1.name; }
   get path() { return this._e1.path; }
   get content() { return '' + this._e1.content + this._e2.content; }
+}
 
-  transform(context: Context): Promise<Entry> {
-    return Promise.all([this._e1.transform(context), this._e2.transform(context)])
-      .then(([e1, e2]) => {
-        if (!e1) {
-          return e2;
-        } else if (!e2) {
-          return e1;
-        } else {
-          return new ConcatEntry(e1, e2);
-        }
-      });
+
+export class MergeJsonEntry implements Entry {
+  private _content: string;
+
+  constructor(private _e1: Entry, private _e2: Entry, private _indent: number = 2) {
+    if (!_e1 || !_e2 || _e1.path !== _e2.path || _e1.name !== _e2.name) {
+      throw new CannotConcatEntriesException();
+    }
+
+    const e1 = JSON.parse(_e1.content);
+    const e2 = JSON.parse(_e2.content);
+
+    this._content = JSON.stringify(defaultsDeep(e2, e1), null, this._indent);
   }
+
+  get name() { return this._e1.name; }
+  get path() { return this._e1.path; }
+  get content() { return this._content; }
 }
