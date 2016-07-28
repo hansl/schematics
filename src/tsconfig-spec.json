@@ -9,17 +9,16 @@
     "noEmitOnError": true,
     "noImplicitAny": true,
     "outDir": "../dist/",
-    "rootDirs": [
-      ".",
-      "../src"
-    ],
+    "rootDir": ".",
     "sourceMap": true,
-    "sourceRoot": "..",
-    "target": "es5"
+    "sourceRoot": "",
+    "target": "es5",
+    "types": [
+      "jasmine",
+      "node"
+    ]
   },
   "include": [
-    "../node_modules/@types/jasmine/index.d.ts",
-    "../node_modules/@types/node/index.d.ts",
-    "**/*.ts"
+    "**/*.spec.ts"
   ]
 }

@@ -1,4 +1,4 @@
-import {BaseException} from '../core/exception';
+import {BaseException} from './exception';
 
 import {defaultsDeep} from 'lodash';
 
@@ -45,7 +45,7 @@ export class ConcatEntry implements Entry {
 export class MergeJsonEntry implements Entry {
   private _content: string;
 
-  constructor(private _e1: Entry, private _e2: Entry, private _indent: number = 2) {
+  constructor(private _e1: Entry, private _e2: Entry, private _indent = 2) {
     if (!_e1 || !_e2 || _e1.path !== _e2.path || _e1.name !== _e2.name) {
       throw new CannotConcatEntriesException();
     }
