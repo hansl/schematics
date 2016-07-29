@@ -6,7 +6,11 @@ import * as path from 'path';
 import {Observable} from 'rxjs/Observable';
 
 import 'rxjs/add/operator/groupBy';
+import 'rxjs/add/operator/let';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/merge';
 import 'rxjs/add/operator/mergeMap';
+import 'rxjs/add/operator/partition';
 import 'rxjs/add/operator/reduce';
 
 
@@ -17,7 +21,7 @@ export type Context = {[key: string]: any};
 export class InvalidKeyException extends BaseException {}
 
 
-export function LodashCompile(context: Context): TransformFn {
+export function LodashCompiler(context: Context): TransformFn {
   return (input: Observable<Entry>) => {
     return input.map(entry => {
       return new StaticEntry(entry.path, entry.name, template(entry.content)(context));
@@ -79,4 +83,12 @@ export function ConcatDuplicates(): TransformFn {
 
 export function MergeJsonDuplicates(indent = 2): TransformFn {
   return MergeDuplicatesWith((a, b) => new MergeJsonEntry(a, b, indent));
+}
+
+
+export function Splice(predicate: (e: Entry) => boolean, transform: TransformFn) {
+  return (input: Observable<Entry>) => {
+    const [match, rest] = input.partition(predicate);
+    return match.let(transform).merge(rest);
+  };
 }

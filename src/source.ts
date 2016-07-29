@@ -2,9 +2,11 @@ import fs = require('fs');
 import path = require('path');
 import {Observable} from 'rxjs/Observable';
 import {ReplaySubject} from 'rxjs/ReplaySubject';
+import {Subject} from 'rxjs/Subject';
 
 import {Entry, StaticEntry} from './entry';
 import {BaseException} from './exception';
+import {access, readFile, readdir, stat} from './fs';
 
 import 'rxjs/add/operator/toPromise';
 
@@ -21,55 +23,6 @@ export class FileSystemException extends BaseException {
 }
 
 
-function readFile(p: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    fs.readFile(p, 'utf-8', (err, data) => {
-      if (err) {
-        reject(new FileSystemException(err));
-      } else {
-        resolve(data);
-      }
-    });
-  });
-}
-
-function readdir(p: string): Promise<string[]> {
-  return new Promise((resolve, reject) => {
-    fs.readdir(p, (err, files) => {
-      if (err) {
-        reject(new FileSystemException(err));
-      } else {
-        resolve(files);
-      }
-    });
-  });
-}
-
-function access(p: string, mode: number): Promise<void> {
-  return new Promise((resolve, reject) => {
-    fs.access(p, mode, (err) => {
-      if (err) {
-        reject(new FileSystemException(err));
-      } else {
-        resolve();
-      }
-    });
-  });
-}
-
-function stat(p: string): Promise<fs.Stats> {
-  return new Promise((resolve, reject) => {
-    fs.stat(p, (err, stats) => {
-      if (err) {
-        reject(new FileSystemException(err));
-      } else {
-        resolve(stats);
-      }
-    });
-  });
-}
-
-
 function _recursiveFileSource(p: string, root: string): Observable<Entry> {
   const subject = new ReplaySubject();
 
@@ -82,7 +35,7 @@ function _recursiveFileSource(p: string, root: string): Observable<Entry> {
           // Root is a file. Error.
           throw new SourceRootMustBeDirectoryException();
         }
-        return readFile(p)
+        return readFile(p, 'utf-8')
           .then((data) => {
             const subpath = path.relative(root, p);
             subject.next(new StaticEntry(path.dirname(subpath), path.basename(subpath), data));
@@ -112,3 +65,38 @@ export function FileSource(root: string): Observable<Entry> {
   return _recursiveFileSource(root, root);
 }
 
+
+export type MemoryMap = {
+  [key: string]: string | MemoryMap | ((p?: string) => (string | MemoryMap))
+};
+
+
+function _recursiveMemorySource(subject: Subject<Entry>, map: MemoryMap, p: string) {
+  for (const key of Object.keys(map)) {
+    const value = map[key];
+    if (typeof value == 'string') {
+      subject.next(new StaticEntry(p, key, value));
+    } else if (typeof value == 'function') {
+      const result = value(key);
+      if (typeof result == 'string') {
+        subject.next(new StaticEntry(p, key, result));
+      } else {
+        _recursiveMemorySource(subject, result, path.join(p, key));
+      }
+    } else {
+      _recursiveMemorySource(subject, value, path.join(p, key));
+    }
+  }
+}
+
+
+export function MemorySource(map: MemoryMap) {
+  const subject = new ReplaySubject();
+  try {
+    _recursiveMemorySource(subject, map, '');
+    subject.complete();
+  } catch (err) {
+    subject.error(err);
+  }
+  return subject.asObservable();
+}
