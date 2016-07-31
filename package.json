@@ -2,7 +2,7 @@
   "name": "schematics",
   "version": "0.0.0",
   "description": "Blueprint library for TypeScript.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc -p src",
     "ci": "npm run lint && npm run test:ci",
