@@ -198,8 +198,8 @@ describe('MergeJsonDuplicates', () => {
       .toPromise()
       .then((entries) => {
         expect(entries.length).toBe(3);
-        expect(JSON.parse(entries[0].content)).toEqual({"hello": "blue"});
-        expect(JSON.parse(entries[1].content)).toEqual({"test": "test2"});
+        expect(JSON.parse(entries[0].content)).toEqual({'hello': 'blue'});
+        expect(JSON.parse(entries[1].content)).toEqual({'test': 'test2'});
         expect(JSON.parse(entries[2].content)).toEqual({});
 
         expect(entries[0].path).toBe('blue');

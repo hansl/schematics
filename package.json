@@ -14,11 +14,9 @@
     "test:ci": "npm run clean && npm run test:build && npm run test:coverage",
     "test:coverage": "npm run coverage:test && npm run coverage:remap && npm run coverage:report",
     "test:watch": "./scripts/run-watch.js",
-    "coverage:test": "npm run coverage:spec && npm run coverage:integration",
-    "coverage:integration": "istanbul cover --print none -x '**/*.spec.js' -i '**/*.js'  --report lcovonly --root dist --dir coverage/integration ./scripts/run-integration.js",
+    "coverage:test": "npm run coverage:spec",
     "coverage:spec": "istanbul cover --print none -x '**/*.spec.js' -i '**/*.js'  --report lcovonly --root dist  --dir coverage/spec ./scripts/run-spec.js",
-    "coverage:remap": "npm run coverage:integration-remap && npm run coverage:spec-remap",
-    "coverage:integration-remap": "remap-istanbul --input coverage/integration/coverage.json --output coverage/integration/coverage.json",
+    "coverage:remap": "npm run coverage:spec-remap",
     "coverage:spec-remap": "remap-istanbul --input coverage/spec/coverage.json --output coverage/spec/coverage.json",
     "coverage:report": "istanbul report --dir coverage html lcov text"
   },

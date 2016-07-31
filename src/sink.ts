@@ -18,9 +18,9 @@ function _createParentDirectory(p: string): Promise<void> {
           return _createParentDirectory(path.dirname(p))
             .then(() => {
               return mkdir(p)
-                .catch((err) => {
-                  if (err.code != 'EEXIST') {
-                    throw new FileSystemException(err);
+                .catch((mkdirErr) => {
+                  if (mkdirErr.code != 'EEXIST') {
+                    throw new FileSystemException(mkdirErr);
                   }
                 });
             });
