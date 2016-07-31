@@ -1,6 +1,7 @@
 import {BaseException} from './exception';
 
 import {defaultsDeep} from 'lodash';
+import * as path from 'path';
 
 export class CannotConcatEntriesException extends BaseException {}
 
@@ -21,11 +22,20 @@ export class StaticEntry implements Entry {
 
 
 export class MoveEntry implements Entry {
-  constructor(private _entry: Entry, private _path: string, private _name: string) {}
+  constructor(protected _entry: Entry, private _path: string, private _name: string) {}
 
   get name() { return this._name; }
   get path() { return this._path; }
   get content() { return this._entry.content; }
+}
+
+
+export class RootEntry extends MoveEntry {
+  constructor(_entry: Entry, private _root: string) {
+    super(_entry, path.join(_root, _entry.path), _entry.name);
+  }
+
+  get relativeName() { return this._entry.path; }
 }
 
 

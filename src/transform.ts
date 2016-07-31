@@ -1,4 +1,4 @@
-import {Entry, StaticEntry, MoveEntry, ConcatEntry, MergeJsonEntry} from './entry';
+import {Entry, StaticEntry, MoveEntry, ConcatEntry, MergeJsonEntry, RootEntry} from './entry';
 import {BaseException} from './exception';
 
 import {template} from 'lodash';
@@ -39,7 +39,7 @@ export type PathRemapperOptions = {
 export function PathRemapper(context: Context, options: PathRemapperOptions = {
   ignoreUnknownKeys: false,
   tokenRegex: /__(.*?)__/g
-}): TransformFn {
+}) {
   return (input: Observable<Entry>) => {
     function replace(s: string) {
       return s.replace(options.tokenRegex, (m, name) => {
@@ -60,7 +60,16 @@ export function PathRemapper(context: Context, options: PathRemapperOptions = {
 }
 
 
-function MergeDuplicatesWith<T extends Entry>(factory: (a: Entry, b: Entry) => T): TransformFn {
+export function PrependRoot(root: string) {
+  return (input: Observable<Entry>) => {
+    return input.map(entry => path.isAbsolute(entry.path) ? entry : new RootEntry(entry, root));
+  };
+}
+
+
+export type MergeEntryFactory = (a: Entry, b: Entry) => Entry | Promise<Entry>;
+
+export function MergeDuplicatesWith(factory: MergeEntryFactory) {
   return (input: Observable<Entry>) => {
     return input
       .groupBy(entry => path.join(entry.path, entry.name))

@@ -1,11 +1,11 @@
-import {FileSink} from './sink';
+import {WriteFile} from './sink';
 import {MemorySource} from './source';
 
 import glob = require('glob');
 import mockFs = require('mock-fs');
 
 
-describe('FileSink', () => {
+describe('WriteFile', () => {
   beforeEach(() => mockFs());
   afterEach(() => mockFs.restore());
 
@@ -19,7 +19,7 @@ describe('FileSink', () => {
       }
     };
     MemorySource(map)
-      .let(FileSink('/tmp/root'))
+      .let(WriteFile())
       .toPromise()
       .then(() => {
         const files = glob.sync('**', { nodir: true });

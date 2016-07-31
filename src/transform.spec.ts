@@ -1,7 +1,7 @@
 import {FileSource} from './source';
 import {
   LodashCompiler, PathRemapper, ConcatDuplicates, Splice,
-  MergeJsonDuplicates
+  MergeJsonDuplicates, PrependRoot
 } from './transform';
 
 import mockFs = require('mock-fs');
@@ -65,6 +65,34 @@ describe('PathRemapper', () => {
       .then((entries) => {
         for (const entry of entries) {
           expect(path.join(entry.path, entry.name)).toBe(entry.content);
+        }
+      })
+      .then(done, done.fail);
+  });
+});
+
+describe('PrependRoot', () => {
+  beforeEach(() => mockFs({
+    'blueprint1': {
+      'a': 'a',
+      'b': 'b',
+      'blue': {
+        'ab': {
+          'cd': 'blue/ab/cd'
+        }
+      }
+    }
+  }));
+  afterEach(() => mockFs.restore());
+
+  it('works', (done) => {
+    FileSource('blueprint1')
+      .let(PrependRoot('/hello/world'))
+      .toArray()
+      .toPromise()
+      .then((entries) => {
+        for (const entry of entries) {
+          expect(path.join(entry.path, entry.name)).toBe(path.join('/hello/world', entry.content));
         }
       })
       .then(done, done.fail);
