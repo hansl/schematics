@@ -5,7 +5,7 @@ import {ReplaySubject} from 'rxjs/ReplaySubject';
 import {Subject} from 'rxjs/Subject';
 
 import {Entry, StaticEntry} from './entry';
-import {BaseException} from './exception';
+import {BaseException} from '../exception';
 import {access, readFile, readdir, stat} from './fs';
 
 import 'rxjs/add/operator/toPromise';

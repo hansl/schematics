@@ -1,4 +1,4 @@
-import {BaseException} from './exception';
+import {BaseException} from '../exception';
 
 import {defaultsDeep} from 'lodash';
 import * as path from 'path';

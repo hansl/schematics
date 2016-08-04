@@ -1,5 +1,5 @@
 import {Entry, StaticEntry, MoveEntry, ConcatEntry, MergeJsonEntry, RootEntry} from './entry';
-import {BaseException} from './exception';
+import {BaseException} from '../exception';
 
 import {template} from 'lodash';
 import * as path from 'path';
@@ -42,7 +42,7 @@ export function PathRemapper(context: Context, options: PathRemapperOptions = {
 }) {
   return (input: Observable<Entry>) => {
     function replace(s: string) {
-      return s.replace(options.tokenRegex, (m, name) => {
+      return s.replace(options.tokenRegex, (m: string, name: string) => {
         if (name in context) {
           return context[name];
         } else if (options.ignoreUnknownKeys) {
@@ -77,8 +77,9 @@ export function MergeDuplicatesWith(factory: MergeEntryFactory) {
         return obs.reduce(function(acc: Entry | null, curr: Entry) {
           if (acc === null) {
             return curr;
+          } else {
+            return factory(acc, curr);
           }
-          return factory(acc, curr);
         }, null);
       });
   };

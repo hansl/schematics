@@ -1,5 +1,5 @@
 import {Entry} from './entry';
-import {BaseException} from './exception';
+import {BaseException} from '../exception';
 import {access, mkdir, writeFile} from './fs';
 import {FileSystemException} from './source';
 
@@ -64,7 +64,7 @@ function _confirmOverwriteSingleFile(entry: Entry, fn: OverwriteDoCallbackFn): P
       // blueprint.
       return Promise.resolve()
           .then(() => fn(entry))
-          .then(result => {
+          .then((result: OverwriteDoCallbackReturn) => {
             switch (result.action) {
               case 'cancel':    throw new UserCancelledSchematicOperationException();
               case 'ignore':    return Promise.resolve(null);
