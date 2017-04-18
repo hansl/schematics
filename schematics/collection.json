@@ -1,0 +1,6 @@
+{
+  "name": "my-schematics",
+  "blueprints": [
+    "./component/blueprint.json"
+  ]
+}
