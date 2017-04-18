@@ -79,7 +79,7 @@ function _confirmOverwriteSingleFile(entry: Entry, fn: OverwriteDoCallbackFn): P
 export function WriteFile(root?: string) {
   return (input: Observable<Entry>): Observable<Entry> => {
     return input
-      .distinct((a, b) => a.path == b.path && a.name == b.name)
+      .distinct((key) => path.join(key.path, key.name))
       .mergeMap(entry => Observable.fromPromise(_writeSingleFile(entry, root)));
   };
 }
@@ -88,7 +88,7 @@ export function WriteFile(root?: string) {
 export function WriteMemory(map: { [key: string]: string }) {
   return (input: Observable<Entry>) => {
     return input
-      .distinct((a, b) => a.path == b.path && a.name == b.name)
+      .distinct((key) => path.join(key.path, key.name))
       .map(entry => {
         map[path.join(entry.path, entry.name)] = entry.content;
         return entry;
@@ -106,7 +106,7 @@ export type OverwriteDoCallbackFn = (entry: Entry) => OverwriteDoCallbackReturn
 export function OnOverwriteDo(fn: OverwriteDoCallbackFn) {
   return (input: Observable<Entry>): Observable<Entry> => {
     return input
-      .distinct((a, b) => a.path == b.path && a.name == b.name)
+      .distinct((key) => path.join(key.path, key.name))
       .mergeMap(entry => _confirmOverwriteSingleFile(entry, fn))
       .filter(entry => entry !== null);
   };

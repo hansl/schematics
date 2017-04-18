@@ -64,7 +64,7 @@ describe('PathRemapper', () => {
       .toPromise()
       .then((entries) => {
         for (const entry of entries) {
-          expect(path.join(entry.path, entry.name)).toBe(entry.content);
+          expect(path.join(entry.path, entry.name)).toBe(path.normalize(entry.content));
         }
       })
       .then(done, done.fail);

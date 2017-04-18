@@ -15,7 +15,7 @@ export function readFile(p: string, encoding: string): Promise<string> {
   });
 }
 
-export function writeFile(p: string, data: string, encoding: string): Promise<void> {
+export function writeFile(p: string, data: string, encoding: string): Promise<any> {
   return new Promise((resolve, reject) => {
     fs.writeFile(p, data, encoding, (err) => {
       if (err) {
@@ -27,7 +27,7 @@ export function writeFile(p: string, data: string, encoding: string): Promise<vo
   });
 }
 
-export function mkdir(p: string): Promise<void> {
+export function mkdir(p: string): Promise<any> {
   return new Promise((resolve, reject) => {
     fs.mkdir(p, (err) => {
       if (err) {
@@ -51,7 +51,7 @@ export function readdir(p: string): Promise<string[]> {
   });
 }
 
-export function access(p: string, mode: number): Promise<void> {
+export function access(p: string, mode: number): Promise<any> {
   return new Promise((resolve, reject) => {
     fs.access(p, mode, (err) => {
       if (err) {

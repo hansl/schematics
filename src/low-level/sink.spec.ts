@@ -4,6 +4,7 @@ import {MemorySource} from './source';
 import glob = require('glob');
 import mockFs = require('mock-fs');
 
+import 'rxjs/add/operator/let';
 
 describe('WriteFile', () => {
   beforeEach(() => mockFs());
