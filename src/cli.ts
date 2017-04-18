@@ -16,15 +16,13 @@ export default function cli() {
     return -1;
   }
 
+  // Delete binary entry.
+  delete options['$0'];
+
   const blueprintName = nonFlags[0];
-  console.log(`
-    collection: ${collectionPath},
-    blueprintName: ${blueprintName},
-    options: ${JSON.stringify(options)},
-  `)
   const collection = new Collection({ path: path.resolve(cwd, collectionPath) });
-  // const blueprint = collection.createBlueprint(blueprintName, options);
-  // blueprint.install(blueprint);
+  const blueprint = collection.createBlueprint(blueprintName, options);
+  // collection.install(blueprint);
 }
 
 cli();
