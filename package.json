@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc -p src",
+    "cli": "npm run build && node ./dist/cli.js",
     "ci": "npm run lint && npm run test:ci",
     "clean": "rm -rf coverage; rm -rf dist",
     "lint": "tslint -c .tslint.json 'src/**/*.ts' 'tests/**/*.ts'",
@@ -27,7 +28,8 @@
     "lodash": "4.13.1",
     "reflect-metadata": "0.1.3",
     "rxjs": "^5.0.0-beta.10",
-    "typescript": "^2.0.0"
+    "typescript": "^2.0.0",
+    "yargs": "^7.0.2"
   },
   "devDependencies": {
     "@types/denodeify": "^1.2.29",
@@ -36,6 +38,7 @@
     "@types/lodash": "^4.0.21-alpha",
     "@types/mock-fs": "^3.6.28",
     "@types/node": "^4.0.29",
+    "@types/yargs": "^6.6.0",
     "coveralls": "^2.11.11",
     "glob": "^7.0.5",
     "istanbul": "^0.4.4",
