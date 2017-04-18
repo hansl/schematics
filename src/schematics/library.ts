@@ -1,4 +1,4 @@
-import {Injector, Provider, ReflectiveInjector} from '@angular/core';
+import {Injector, ReflectiveInjector} from '@angular/core';
 import {BaseException} from '../exception';
 
 

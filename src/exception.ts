@@ -1,2 +1,2 @@
 
-export class BaseException extends Error {}
+export class BaseException {}
