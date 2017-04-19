@@ -2,8 +2,14 @@ import * as yargs from 'yargs';
 import * as path from 'path';
 import { Observable } from 'rxjs/Observable';
 
-import { Collection, BlueprintNotFoundException, CreateAction } from './index';
+import {
+  Collection,
+  BlueprintNotFoundException,
+  CreateAction,
+  PrependRoot
+} from './index';
 
+import 'rxjs/add/operator/let';
 import 'rxjs/add/operator/do';
 
 
@@ -44,7 +50,9 @@ export default function cli() {
       throw err;
     }
   }
-  const actions = blueprint.load(options);
+  const actions = blueprint.load(options)
+    .let(PrependRoot(cwd));
+    
   actions.subscribe((action: CreateAction) => console.log(action.path))
 }
 

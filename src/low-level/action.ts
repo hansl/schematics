@@ -11,12 +11,11 @@ export type Action = CreateAction
 
 export class CreateAction {
   public readonly kind: 'c';
-  private _content: string | null;
 
   constructor(
     public readonly path: string,
     public readonly isDirectory: boolean,
-    private content: string | null
+    public readonly content: string | null
   ) { }
 }
 
