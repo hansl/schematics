@@ -1,11 +1,15 @@
+const camelCase = require('lodash').camelCase;
+const upperFirst = require('lodash').upperFirst;
+
 const LodashCompiler = require('../../dist/low-level/transform').LodashCompiler;
+
 
 function transformFactory(options) {
 
   const templateVariables = {
     selector: options.name,
     dasherizedModuleName: options.name,
-    classifiedModuleName: options.name,
+    classifiedModuleName: upperFirst(camelCase(options.name)),
   }
   return (source) => {
     return source
