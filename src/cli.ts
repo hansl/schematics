@@ -6,7 +6,8 @@ import {
   Collection,
   BlueprintNotFoundException,
   CreateAction,
-  PrependRoot
+  PrependRoot,
+  WriteFile
 } from './index';
 
 import 'rxjs/add/operator/let';
@@ -51,16 +52,13 @@ export default function cli() {
     }
   }
 
-  // Source.
-  const actions = blueprint.load(options)
-    // Transform.
-    .let(PrependRoot({ root: cwd }))
-    // Sink.
-    // Report.
-    .subscribe(
-    (action: CreateAction) => console.log(action.path),
-    (err) => { console.log(err); return -1; }
-    )
+  // Source & transform.
+  const actions = blueprint.load(options);
+
+  // Sink.
+  const writeSink = new WriteFile(cwd);
+  return writeSink.install(actions)
+    .catch((err) => { console.log(err); return -1; })
 }
 
 cli();
