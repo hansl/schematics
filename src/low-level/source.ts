@@ -1,17 +1,19 @@
 import fs = require('fs');
 import path = require('path');
-import {Observable} from 'rxjs/Observable';
-import {ReplaySubject} from 'rxjs/ReplaySubject';
-import {Subject} from 'rxjs/Subject';
+import { Observable } from 'rxjs/Observable';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
 
-import {Entry, StaticEntry} from './entry';
-import {BaseException} from '../exception';
-import {access, readFile, readdir, stat} from './fs';
+import { Action, CreateAction } from './action';
+import { BaseException } from '../exception';
+import { access, readFile, readdir, stat } from './fs';
 
 import 'rxjs/add/operator/toPromise';
 
 
-export class SourceRootMustBeDirectoryException extends BaseException {}
+export class SourceRootMustBeDirectoryException extends BaseException { }
+export class SourceMustIncludeProtocolException extends BaseException { }
+export class SourceMustIncludePathException extends BaseException { }
+export class UnknownSourceProtocolException extends BaseException { }
 
 export class FileSystemException extends BaseException {
   constructor(public internalError: NodeJS.ErrnoException) {
@@ -22,14 +24,14 @@ export class FileSystemException extends BaseException {
   get message(): string { return this.internalError.message; }
 }
 
-
-function _recursiveFileSource(p: string, root: string): Observable<Entry> {
+function _recursiveFileSource(p: string, root: string): Observable<Action> {
   const subject = new ReplaySubject();
 
   access(p, fs.R_OK)
     .then(() => stat(p))
     .catch(err => { throw new FileSystemException(err); })
     .then((stats) => {
+      const subpath = path.relative(root, p);
       if (stats.isFile()) {
         if (p == root) {
           // Root is a file. Error.
@@ -37,10 +39,13 @@ function _recursiveFileSource(p: string, root: string): Observable<Entry> {
         }
         return readFile(p, 'utf-8')
           .then((data) => {
-            const subpath = path.relative(root, p);
-            subject.next(new StaticEntry(path.dirname(subpath), path.basename(subpath), data));
+            subject.next(new CreateAction(subpath, false, data));
           });
       } else {
+        if (p != root) {
+          // Don't create root.
+          subject.next(new CreateAction(subpath, true, null));
+        }
         return readdir(p)
           .then((files) => {
             return Promise.all(files.map((file) => {
@@ -61,42 +66,22 @@ function _recursiveFileSource(p: string, root: string): Observable<Entry> {
 }
 
 
-export function FileSource(root: string): Observable<Entry> {
+export function FileSource(root: string): Observable<Action> {
   return _recursiveFileSource(root, root);
 }
 
 
-export type MemoryMap = {
-  [key: string]: string | MemoryMap | ((p?: string) => (string | MemoryMap))
-};
+export function Source(root: string, sourceString: string): Observable<Action> {
+  const protocolRegex = /^(.*)\:\/\/(.*)/;
+  const matches = sourceString.match(protocolRegex);
 
+  if (!matches) { throw new SourceMustIncludeProtocolException(); }
+  if (matches.length != 3) { throw new SourceMustIncludePathException(); }
 
-function _recursiveMemorySource(subject: Subject<Entry>, map: MemoryMap, p: string) {
-  for (const key of Object.keys(map)) {
-    const value = map[key];
-    if (typeof value == 'string') {
-      subject.next(new StaticEntry(p, key, value));
-    } else if (typeof value == 'function') {
-      const result = value(key);
-      if (typeof result == 'string') {
-        subject.next(new StaticEntry(p, key, result));
-      } else {
-        _recursiveMemorySource(subject, result, path.join(p, key));
-      }
-    } else {
-      _recursiveMemorySource(subject, value, path.join(p, key));
-    }
+  const [, sourceProtocol, sourcePath] = matches;
+
+  switch (sourceProtocol) {
+    case 'file': return FileSource(path.join(root, sourcePath));
+    default: throw new UnknownSourceProtocolException();
   }
-}
-
-
-export function MemorySource(map: MemoryMap) {
-  const subject = new ReplaySubject();
-  try {
-    _recursiveMemorySource(subject, map, '');
-    subject.complete();
-  } catch (err) {
-    subject.error(err);
-  }
-  return subject.asObservable();
 }

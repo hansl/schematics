@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "id": "ComponentSchema",
+  "title": "Component Blueprint Input",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "Component name.",
+      "type": "string"
+    },
+    "spec": {
+      "description": "Include spec file.",
+      "type": "boolean",
+      "default": "true"
+    }
+  }
+}
