@@ -59,7 +59,10 @@ function _writeSingleFile(action: Action) {
   if (action instanceof CreateAction) {
     const parentPath = action.isDirectory ? action.path : path.dirname(action.path);
     return _createParentDirectory(parentPath)
-      .then(() => writeFile(action.path, action.content, 'utf-8'));
+      .then(() => action.isDirectory
+        ? _createParentDirectory(action.path)
+        : writeFile(action.path, action.content, 'utf-8')
+      );
   }
   // Ignore any action besides CreateAction.
   return Promise.resolve();
