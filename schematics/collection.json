@@ -1,6 +1,6 @@
 {
   "name": "my-schematics",
   "blueprints": [
-    "./component/"
+    "./component/blueprint.js"
   ]
 }

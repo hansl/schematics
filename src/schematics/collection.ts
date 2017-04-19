@@ -5,7 +5,6 @@ import { BaseException } from '../exception';
 import { Blueprint } from './blueprint';
 
 
-export class CollectionMetadataMustBeJsonException extends BaseException { }
 export class CannotLoadCollectionException extends BaseException { }
 export class BlueprintNotFoundException extends BaseException { }
 
@@ -34,10 +33,6 @@ export class Collection {
     const metadataJsonPath = fs.lstatSync(options.path).isDirectory()
       ? path.join(options.path, 'collection.json')
       : options.path;
-
-    if (!metadataJsonPath.endsWith('.json')) {
-      throw new CollectionMetadataMustBeJsonException()
-    }
 
     let metadataJson;
     try {

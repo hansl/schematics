@@ -7,8 +7,6 @@ import { Action } from '../low-level/action';
 import { Source } from '../low-level/source';
 
 
-export class BlueprintMetadataMustBeJsException extends BaseException { }
-
 export interface BlueprintOptions {
   path: string;
 }
@@ -34,12 +32,8 @@ export class Blueprint {
 
   init(options: BlueprintOptions) {
     const blueprintPath = fs.lstatSync(options.path).isDirectory()
-      ? path.join(options.path, 'blueprint.js')
+      ? path.join(options.path, 'blueprint.json')
       : options.path;
-
-    if (!blueprintPath.endsWith('.js')) {
-      throw new BlueprintMetadataMustBeJsException();
-    }
 
     let blueprintDefinition;
     try {
