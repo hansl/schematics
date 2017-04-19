@@ -17,4 +17,4 @@ module.exports = {
   source: 'file://./templates/',
   // transformFactory,
   schema: require('./schema.json')
-}
+};

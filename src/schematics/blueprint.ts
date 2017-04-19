@@ -31,20 +31,18 @@ export class Blueprint {
   }
 
   init(options: BlueprintOptions) {
-    const blueprintPath = fs.lstatSync(options.path).isDirectory()
-      ? path.join(options.path, 'blueprint.json')
-      : options.path;
-
     let blueprintDefinition;
     try {
-      blueprintDefinition = require(blueprintPath);
+      blueprintDefinition = require(options.path);
     } catch (error) {
-      throw new error;
+      throw error;
     }
 
+    this._path = fs.lstatSync(options.path).isDirectory()
+      ? options.path
+      : path.dirname(options.path);
     this._name = blueprintDefinition.name;
     this._description = blueprintDefinition.description;
-    this._path = path.dirname(blueprintPath);
     this._schema = blueprintDefinition.schema;
     this._source = blueprintDefinition.source;
   }

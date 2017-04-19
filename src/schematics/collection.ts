@@ -30,18 +30,16 @@ export class Collection {
   }
 
   init(options: CollectionOptions): void {
-    const metadataJsonPath = fs.lstatSync(options.path).isDirectory()
-      ? path.join(options.path, 'collection.json')
-      : options.path;
-
     let metadataJson;
     try {
-      metadataJson = require(metadataJsonPath);
+      metadataJson = require(options.path);
     } catch (error) {
       throw new CannotLoadCollectionException();
     }
 
-    this._path = path.dirname(metadataJsonPath);
+    this._path = fs.lstatSync(options.path).isDirectory()
+      ? options.path
+      : path.dirname(options.path);
     this._name = metadataJson.name;
     this._blueprints = metadataJson.blueprints.map((blueprintPath: string) => {
       return new Blueprint({ path: path.join(this._path, blueprintPath) });
