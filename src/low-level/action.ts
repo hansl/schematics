@@ -9,11 +9,15 @@ export type Action = CreateAction
   | DeleteAction
   | FunctionAction;
 
-export interface CreateAction {
-  kind: 'c';
-  path: string;
-  isDirectory: boolean;
-  content: string | null;
+export class CreateAction {
+  public readonly kind: 'c';
+  private _content: string | null;
+
+  constructor(
+    public readonly path: string,
+    public readonly isDirectory: boolean,
+    private content: string | null
+  ) { }
 }
 
 export interface RenameAction {

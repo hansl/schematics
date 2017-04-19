@@ -1,6 +1,10 @@
-import { Collection, BlueprintNotFoundException } from './index';
 import * as yargs from 'yargs';
 import * as path from 'path';
+import { Observable } from 'rxjs/Observable';
+
+import { Collection, BlueprintNotFoundException, CreateAction } from './index';
+
+import 'rxjs/add/operator/do';
 
 
 function usage(collection: Collection) {
@@ -40,7 +44,8 @@ export default function cli() {
       throw err;
     }
   }
-  blueprint.load(options);
+  const actions = blueprint.load(options);
+  actions.subscribe((action: CreateAction) => console.log(action.path))
 }
 
 cli();
