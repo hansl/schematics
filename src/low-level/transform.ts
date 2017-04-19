@@ -45,3 +45,14 @@ export function LodashCompiler(options: JsonObject): TransformFunction {
     });
   };
 }
+
+export function LogActions(): TransformFunction {
+  return (source: Observable<Action>) => {
+    return source.map(action => {
+      if (action instanceof CreateAction) {
+        console.log(`Creating ${action.path}`);
+      }
+      return action;
+    });
+  };
+}
