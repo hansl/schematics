@@ -11,14 +11,22 @@ export interface BlueprintOptions {
 }
 
 export class Blueprint {
-  public name: string;
-  public definition: string;
-  private path: string;
-  private schema: string;
-  private source: string;
+  private _name: string;
+  private _description: string;
+  private _path: string;
+  private _schema: string;
+  private _source: string;
 
   constructor(options: BlueprintOptions) {
     this.init(options);
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  get description() {
+    return this._description;
   }
 
   init(options: BlueprintOptions) {
@@ -30,18 +38,18 @@ export class Blueprint {
       throw new BlueprintMetadataMustBeJsException();
     }
 
-    let blueprint;
+    let blueprintDefinition;
     try {
-      blueprint = require(blueprintPath);
+      blueprintDefinition = require(blueprintPath);
     } catch (error) {
       throw new error;
     }
 
-    this.name = blueprint.name;
-    this.definition = blueprint.definition;
-    this.path = path.dirname(blueprintPath);
-    this.schema = blueprint.schema;
-    this.source = blueprint.source;
+    this._name = blueprintDefinition.name;
+    this._description = blueprintDefinition.description;
+    this._path = path.dirname(blueprintPath);
+    this._schema = blueprintDefinition.schema;
+    this._source = blueprintDefinition.source;
   }
 
   load(options: any) {

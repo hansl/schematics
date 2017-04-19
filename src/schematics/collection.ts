@@ -14,15 +14,23 @@ export interface CollectionOptions {
 }
 
 export class Collection {
-  public name: string;
-  private path: string;
-  private blueprints: Blueprint[];
+  private _name: string;
+  private _path: string;
+  private _blueprints: Blueprint[];
 
   constructor(options: CollectionOptions) {
     this.init(options);
   }
 
-  init(options: CollectionOptions) {
+  get name() {
+    return this._name;
+  }
+
+  get blueprints() {
+    return this._blueprints;
+  }
+
+  init(options: CollectionOptions): void {
     const metadataJsonPath = fs.lstatSync(options.path).isDirectory()
       ? path.join(options.path, 'collection.json')
       : options.path;
@@ -38,16 +46,16 @@ export class Collection {
       throw new CannotLoadCollectionException();
     }
 
-    this.path = path.dirname(metadataJsonPath);
-    this.name = metadataJson.name;
-    this.blueprints = metadataJson.blueprints.map((blueprintPath: string) => {
-      return new Blueprint({ path: path.join(this.path, blueprintPath) });
+    this._path = path.dirname(metadataJsonPath);
+    this._name = metadataJson.name;
+    this._blueprints = metadataJson.blueprints.map((blueprintPath: string) => {
+      return new Blueprint({ path: path.join(this._path, blueprintPath) });
     });
   }
 
-  createBlueprint(name: string, options: any) {
-    const blueprint = this.blueprints.find(blueprint => blueprint.name == name);
+  createBlueprint(name: string, options: any): Blueprint {
+    const blueprint = this._blueprints.find(blueprint => blueprint.name == name);
     if (!blueprint) { throw new BlueprintNotFoundException }
-    return blueprint.load(options);
+    return blueprint;
   }
 }
