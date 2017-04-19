@@ -3,9 +3,12 @@
   "version": "0.0.0",
   "description": "Blueprint library for TypeScript.",
   "main": "dist/index.js",
+  "bin": {
+    "schem": "dist/cli.js"
+  },
   "scripts": {
     "build": "tsc -p src",
-    "cli": "npm run build && node ./dist/cli.js",
+    "build-watch": "tsc -p src -w",
     "ci": "npm run lint && npm run test:ci",
     "clean": "rm -rf coverage; rm -rf dist",
     "lint": "tslint -c .tslint.json 'src/**/*.ts' 'tests/**/*.ts'",
