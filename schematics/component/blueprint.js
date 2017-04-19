@@ -13,7 +13,7 @@
 
 module.exports = {
   name: 'component',
-  definition: "Create an Angular component and import it in the closest module.",
+  description: 'Create an Angular component and import it in the closest module.',
   source: 'file://./templates/',
   // transformFactory,
   schema: require('./schema.json')
