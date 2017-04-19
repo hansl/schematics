@@ -2,7 +2,6 @@ import fs = require('fs');
 import path = require('path');
 import { Observable } from 'rxjs/Observable';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { Subject } from 'rxjs/Subject';
 
 import { Action, CreateAction } from './action';
 import { BaseException } from '../exception';

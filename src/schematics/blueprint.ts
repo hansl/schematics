@@ -2,7 +2,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { Observable } from 'rxjs/Observable';
 
-import { BaseException } from '../exception';
 import { Action } from '../low-level/action';
 import { Source } from '../low-level/source';
 import { TransformFactory } from '../low-level/transform';

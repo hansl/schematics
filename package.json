@@ -11,7 +11,7 @@
     "build-watch": "tsc -p src -w",
     "ci": "npm run lint && npm run test:ci",
     "clean": "rm -rf coverage; rm -rf dist",
-    "lint": "tslint -c .tslint.json 'src/**/*.ts' 'tests/**/*.ts'",
+    "lint": "tslint -c .tslint.json \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "npm run test:build && node ./scripts/run-spec.js",
     "test:build": "tsc -p src/tsconfig-spec.json",
     "test:build-watch": "tsc -p src/tsconfig-spec.json -w",

@@ -9,7 +9,7 @@ import 'rxjs/add/operator/map';
 
 
 export interface JsonObject {
-  [key: string]: any
+  [key: string]: any;
 }
 
 export interface TransformFactory {

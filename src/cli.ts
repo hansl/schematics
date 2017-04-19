@@ -3,13 +3,10 @@
 import * as yargs from 'yargs';
 import * as path from 'path';
 import { existsSync } from 'fs';
-import { Observable } from 'rxjs/Observable';
 
 import {
   Collection,
   BlueprintNotFoundException,
-  CreateAction,
-  PrependRoot,
   WriteFile,
   LogActions
 } from './index';
@@ -82,7 +79,7 @@ export default function cli() {
     blueprint = collection.getBlueprint(blueprintName);
   } catch (err) {
     if (err instanceof BlueprintNotFoundException) {
-      console.log('Blueprint not found in collection.')
+      console.log('Blueprint not found in collection.');
     } else {
       throw err;
     }
@@ -96,12 +93,12 @@ export default function cli() {
   let promise;
   if (!dryRun) {
     const writeSink = new WriteFile(cwd);
-    promise = writeSink.install(actions)
+    promise = writeSink.install(actions);
   } else {
     promise = actions.toPromise();
   }
 
-  return promise.catch((err) => { console.log(err); return -1; })
+  return promise.catch((err) => { console.log(err); return -1; });
 }
 
 cli();
