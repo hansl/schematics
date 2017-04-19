@@ -50,10 +50,17 @@ export default function cli() {
       throw err;
     }
   }
+
+  // Source.
   const actions = blueprint.load(options)
-    .let(PrependRoot(cwd));
-    
-  actions.subscribe((action: CreateAction) => console.log(action.path))
+    // Transform.
+    .let(PrependRoot({ root: cwd }))
+    // Sink.
+    // Report.
+    .subscribe(
+    (action: CreateAction) => console.log(action.path),
+    (err) => { console.log(err); return -1; }
+    )
 }
 
 cli();

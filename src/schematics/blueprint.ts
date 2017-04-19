@@ -5,6 +5,7 @@ import { Observable } from 'rxjs/Observable';
 import { BaseException } from '../exception';
 import { Action } from '../low-level/action';
 import { Source } from '../low-level/source';
+import { TransformFactory } from '../low-level/transform';
 
 
 export interface BlueprintOptions {
@@ -17,6 +18,7 @@ export class Blueprint {
   private _path: string;
   private _schema: string;
   private _source: string;
+  private _transformFactory: TransformFactory | null;
 
   constructor(options: BlueprintOptions) {
     this.init(options);
@@ -45,12 +47,15 @@ export class Blueprint {
     this._description = blueprintDefinition.description;
     this._schema = blueprintDefinition.schema;
     this._source = blueprintDefinition.source;
+    this._transformFactory = blueprintDefinition.transformFactory;
   }
 
   load(options: any): Observable<Action> {
     // validate options
-    const actions = Source(this._path, this._source);
-    // load transform
+    let actions = Source(this._path, this._source);
+    if (this._transformFactory) {
+      actions = actions.let(this._transformFactory(options));
+    }
     return actions;
   }
 }
