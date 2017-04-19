@@ -1,7 +1,0 @@
-{
-  "name": "component",
-  "transformFactory": "./logic",
-  "schema": "./schema.json",
-  "source": "file://./templates/",
-  "definition": "Create an Angular component and import it in the closest module."
-}

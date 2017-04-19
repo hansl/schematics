@@ -1,4 +1,4 @@
-import { Collection } from './index';
+import { Collection, BlueprintNotFoundException } from './index';
 import * as yargs from 'yargs';
 import * as path from 'path';
 
@@ -21,7 +21,15 @@ export default function cli() {
 
   const blueprintName = nonFlags[0];
   const collection = new Collection({ path: path.resolve(cwd, collectionPath) });
-  const blueprint = collection.createBlueprint(blueprintName, options);
+  try {
+    const blueprint = collection.createBlueprint(blueprintName, options);
+  } catch (err) {
+    if (err instanceof BlueprintNotFoundException) {
+      console.log('Blueprint not found in collection.')
+    } else {
+      throw err;
+    }
+  }
   // collection.install(blueprint);
 }
 

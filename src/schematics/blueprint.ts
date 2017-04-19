@@ -4,8 +4,7 @@ import * as fs from 'fs';
 import { BaseException } from '../exception';
 
 
-export class BlueprintMetadataMustBeJsonException extends BaseException { }
-export class CannotLoadBlueprintException extends BaseException { }
+export class BlueprintMetadataMustBeJsException extends BaseException { }
 
 export interface BlueprintOptions {
   path: string;
@@ -23,26 +22,26 @@ export class Blueprint {
   }
 
   init(options: BlueprintOptions) {
-    const metadataJsonPath = fs.lstatSync(options.path).isDirectory()
-      ? path.join(options.path, 'blueprint.json')
+    const blueprintPath = fs.lstatSync(options.path).isDirectory()
+      ? path.join(options.path, 'blueprint.js')
       : options.path;
 
-    if (!metadataJsonPath.endsWith('.json')) {
-      throw new BlueprintMetadataMustBeJsonException()
+    if (!blueprintPath.endsWith('.js')) {
+      throw new BlueprintMetadataMustBeJsException();
     }
 
-    let metadataJson;
+    let blueprint;
     try {
-      metadataJson = require(metadataJsonPath);
+      blueprint = require(blueprintPath);
     } catch (error) {
-      throw new CannotLoadBlueprintException();
+      throw new error;
     }
 
-    this.name = metadataJson.name;
-    this.definition = metadataJson.definition;
-    this.path = path.dirname(metadataJsonPath);
-    this.schema = metadataJson.schema;
-    this.source = metadataJson.source;
+    this.name = blueprint.name;
+    this.definition = blueprint.definition;
+    this.path = path.dirname(blueprintPath);
+    this.schema = blueprint.schema;
+    this.source = blueprint.source;
   }
 
   load(options: any) {
