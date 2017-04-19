@@ -53,7 +53,7 @@ export class Collection {
     });
   }
 
-  createBlueprint(name: string, options: any): Blueprint {
+  getBlueprint(name: string): Blueprint {
     const blueprint = this._blueprints.find(blueprint => blueprint.name == name);
     if (!blueprint) { throw new BlueprintNotFoundException }
     return blueprint;

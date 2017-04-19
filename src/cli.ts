@@ -32,7 +32,7 @@ export default function cli() {
 
   let blueprint;
   try {
-    blueprint = collection.createBlueprint(blueprintName, options);
+    blueprint = collection.getBlueprint(blueprintName);
   } catch (err) {
     if (err instanceof BlueprintNotFoundException) {
       console.log('Blueprint not found in collection.')
